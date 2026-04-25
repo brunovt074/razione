@@ -15,22 +15,18 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.runtime)
             implementation(compose.ui)
             implementation(projects.shared)
+            implementation("org.xerial:sqlite-jdbc:3.46.0.0")
         }
 
-        commonTest.dependencies {
+        jvmTest.dependencies {
             implementation(libs.kotlin.test)
-        }
-
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
         }
     }
 }
