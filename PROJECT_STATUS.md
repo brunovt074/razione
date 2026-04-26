@@ -53,29 +53,30 @@ master
 - `composeApp` and `shared` modules bootstrapped
 - Compile validation for desktop target completed
 
-### Step 2: Agentic Architecture Foundation [IN PROGRESS]
+### Step 2: Agentic Architecture Foundation [DONE]
 **Branch**: `feature/agentic-arch`
 
-- AGENTS governance being adapted from ERP reference
-- Skills tree and synchronization workflow to be finalized
-- Domain-specific architecture decisions and rules to be codified
+- AGENTS governance fully adapted from ERP reference to this business domain
+- Skills tree implemented with scoped synchronization (`shared`, `composeApp`, `skills`, `root`)
+- Domain-specific architecture decisions codified (one declaration per file, no nested enums)
 
-### Step 3: Starting Business Implementation [PENDING]
+### Step 3: Starting Business Implementation [DONE]
 **Branch**: `feature/starting-implementation-business-mvp`
 
-- Migrate previous implementation into modular architecture
-- Apply skill rules strictly (architecture, sqlite-jdbc, testing, compose)
-- Add compliance audit against AGENTS + skills
+- Business implementation migrated to module-per-domain architecture in `shared`
+- Infrastructure SQLite moved from `composeApp` to `shared` and wired as adapter
+- UI screens moved to presenter pattern (state and actions outside composables)
+- Use cases split with explicit commands/queries in separate files
+- Tests added for ingredient, recipe, and costing use cases
+- Compliance audit executed against AGENTS and skills rules
 
 ---
 
 ## Immediate Next Actions
 
-1. Finalize skills in `skills/` and sync AGENTS files
-2. Create branch `feature/starting-implementation-business-mvp` from `feature/agentic-arch`
-3. Move business code into module-per-domain structure under `shared/`
-4. Add tests and run full validation command
-5. Execute architecture audit and document findings
+1. Review commit history and normalize non-descriptive message inherited from legacy (`autocommit`) in future cleanup branch if desired
+2. Expand integration tests for SQLite repositories (currently unit-focused coverage)
+3. Add migration runner strategy beyond single V1 bootstrap if schema evolves
 
 ---
 

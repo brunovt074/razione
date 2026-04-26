@@ -13,46 +13,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.application.usecase.recipe.AddComponentToRecipeUseCase
-import com.recipecostcalculator.application.usecase.recipe.CreateRecipeUseCase
-import com.recipecostcalculator.domain.model.ingredient.Ingredient
-import com.recipecostcalculator.domain.model.recipe.IngredientComponent
-import com.recipecostcalculator.domain.model.recipe.Recipe
-import com.recipecostcalculator.domain.model.recipe.SubRecipeComponent
-import com.recipecostcalculator.domain.model.valueobject.Quantity
-import com.recipecostcalculator.domain.model.valueobject.UnitOfMeasure
-import com.recipecostcalculator.domain.repository.IngredientRepository
-import com.recipecostcalculator.domain.repository.RecipeRepository
+import com.recipecostcalculator.ingredient.domain.model.Ingredient
+import com.recipecostcalculator.recipe.domain.model.IngredientComponent
+import com.recipecostcalculator.recipe.domain.model.Recipe
+import com.recipecostcalculator.recipe.domain.model.SubRecipeComponent
+import com.recipecostcalculator.recipe.domain.model.UnitOfMeasure
 import com.recipecostcalculator.ui.components.SimpleDropdown
-import com.recipecostcalculator.ui.components.parseDecimalOrNull
 
 @Composable
 fun RecipeScreen(
-    ingredientRepository: IngredientRepository,
-    recipeRepository: RecipeRepository,
-    createRecipeUseCase: CreateRecipeUseCase,
-    addComponentToRecipeUseCase: AddComponentToRecipeUseCase,
+    presenter: RecipePresenter,
 ) {
-    var refreshKey by remember { mutableStateOf(0) }
-    val recipes = remember(refreshKey) { recipeRepository.findAll() }
-    val ingredients = remember(refreshKey) { ingredientRepository.findAll() }
-
-    var recipeNameInput by remember { mutableStateOf("") }
-    var recipeYieldInput by remember { mutableStateOf("1") }
-
-    var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
-    var selectedIngredientId by remember { mutableStateOf<Long?>(null) }
-    var selectedSubRecipeId by remember { mutableStateOf<Long?>(null) }
-    var componentQuantityInput by remember { mutableStateOf("1") }
-    var componentUnit by remember { mutableStateOf(UnitOfMeasure.UNIT) }
-    var message by remember { mutableStateOf<String?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -69,35 +42,19 @@ fun RecipeScreen(
             ) {
                 Text("Crear receta", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
-                    value = recipeNameInput,
-                    onValueChange = { recipeNameInput = it },
+                    value = presenter.recipeNameInput,
+                    onValueChange = presenter::updateRecipeNameInput,
                     label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
-                    value = recipeYieldInput,
-                    onValueChange = { recipeYieldInput = it },
+                    value = presenter.recipeYieldInput,
+                    onValueChange = presenter::updateRecipeYieldInput,
                     label = { Text("Rendimiento (unidades)") },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Button(
-                    onClick = {
-                        val yieldValue = parseDecimalOrNull(recipeYieldInput)
-                        if (recipeNameInput.isBlank() || yieldValue == null) {
-                            message = "Completa nombre y rendimiento valido"
-                            return@Button
-                        }
-                        createRecipeUseCase(
-                            CreateRecipeUseCase.Command(
-                                name = recipeNameInput,
-                                yield = Quantity.of(yieldValue, UnitOfMeasure.UNIT),
-                            ),
-                        )
-                        recipeNameInput = ""
-                        recipeYieldInput = "1"
-                        message = "Receta creada"
-                        refreshKey++
-                    },
+                    onClick = presenter::createRecipe,
                 ) {
                     Text("Guardar")
                 }
@@ -113,106 +70,58 @@ fun RecipeScreen(
 
                 SimpleDropdown(
                     label = "Receta destino",
-                    options = recipes,
-                    selected = recipes.firstOrNull { it.id == selectedRecipeId },
+                    options = presenter.recipes,
+                    selected = presenter.currentSelectedRecipe(),
                     optionLabel = { it.name },
-                    onSelected = { selectedRecipeId = it.id },
+                    onSelected = presenter::selectRecipe,
                 )
 
                 SimpleDropdown(
                     label = "Ingrediente",
-                    options = ingredients,
-                    selected = ingredients.firstOrNull { it.id == selectedIngredientId },
+                    options = presenter.ingredients,
+                    selected = presenter.currentSelectedIngredient(),
                     optionLabel = { it.name },
-                    onSelected = {
-                        selectedIngredientId = it.id
-                        selectedSubRecipeId = null
-                        componentUnit = it.unit
-                    },
+                    onSelected = presenter::selectIngredient,
                 )
 
                 SimpleDropdown(
                     label = "Sub-receta",
-                    options = recipes,
-                    selected = recipes.firstOrNull { it.id == selectedSubRecipeId },
+                    options = presenter.recipes,
+                    selected = presenter.currentSelectedSubRecipe(),
                     optionLabel = { it.name },
-                    onSelected = {
-                        selectedSubRecipeId = it.id
-                        selectedIngredientId = null
-                        componentUnit = UnitOfMeasure.UNIT
-                    },
+                    onSelected = presenter::selectSubRecipe,
                 )
 
                 OutlinedTextField(
-                    value = componentQuantityInput,
-                    onValueChange = { componentQuantityInput = it },
+                    value = presenter.componentQuantityInput,
+                    onValueChange = presenter::updateComponentQuantityInput,
                     label = { Text("Cantidad") },
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                if (selectedIngredientId != null) {
-                    Text("Unidad fijada por ingrediente: ${componentUnit.symbol}")
-                } else if (selectedSubRecipeId != null) {
+                if (presenter.selectedIngredientId != null) {
+                    Text("Unidad fijada por ingrediente: ${presenter.componentUnit.symbol}")
+                } else if (presenter.selectedSubRecipeId != null) {
                     Text("Unidad fijada por sub-receta: ${UnitOfMeasure.UNIT.symbol}")
                 } else {
                     SimpleDropdown(
                         label = "Unidad componente",
                         options = UnitOfMeasure.entries,
-                        selected = componentUnit,
+                        selected = presenter.componentUnit,
                         optionLabel = { "${it.name} (${it.symbol})" },
-                        onSelected = { componentUnit = it },
+                        onSelected = presenter::updateComponentUnit,
                     )
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
-                        onClick = {
-                            val recipeId = selectedRecipeId
-                            val ingredientId = selectedIngredientId
-                            val quantityValue = parseDecimalOrNull(componentQuantityInput)
-                            if (recipeId == null || ingredientId == null || quantityValue == null) {
-                                message = "Selecciona receta, ingrediente y cantidad valida"
-                                return@Button
-                            }
-
-                            addComponentToRecipeUseCase(
-                                AddComponentToRecipeUseCase.Command(
-                                    recipeId = recipeId,
-                                    component = IngredientComponent(
-                                        ingredientId = ingredientId,
-                                        quantity = Quantity.of(quantityValue, componentUnit),
-                                    ),
-                                ),
-                            )
-                            message = "Ingrediente agregado"
-                            refreshKey++
-                        },
+                        onClick = presenter::addIngredientComponent,
                     ) {
                         Text("Agregar ingrediente")
                     }
 
                     Button(
-                        onClick = {
-                            val recipeId = selectedRecipeId
-                            val subRecipeId = selectedSubRecipeId
-                            val quantityValue = parseDecimalOrNull(componentQuantityInput)
-                            if (recipeId == null || subRecipeId == null || quantityValue == null) {
-                                message = "Selecciona receta, sub-receta y cantidad valida"
-                                return@Button
-                            }
-
-                            addComponentToRecipeUseCase(
-                                AddComponentToRecipeUseCase.Command(
-                                    recipeId = recipeId,
-                                    component = SubRecipeComponent(
-                                        recipeId = subRecipeId,
-                                        quantity = Quantity.of(quantityValue, UnitOfMeasure.UNIT),
-                                    ),
-                                ),
-                            )
-                            message = "Sub-receta agregada"
-                            refreshKey++
-                        },
+                        onClick = presenter::addSubRecipeComponent,
                     ) {
                         Text("Agregar sub-receta")
                     }
@@ -221,15 +130,15 @@ fun RecipeScreen(
         }
 
         Text("Listado", style = MaterialTheme.typography.titleMedium)
-        if (recipes.isEmpty()) {
+        if (presenter.recipes.isEmpty()) {
             Text("No hay recetas cargadas")
         } else {
-            recipes.forEach { recipe ->
-                RecipeRow(recipe, ingredients, recipes)
+            presenter.recipes.forEach { recipe ->
+                RecipeRow(recipe, presenter.ingredients, presenter.recipes)
             }
         }
 
-        message?.let { Text(it) }
+        presenter.message?.let { Text(it) }
     }
 }
 

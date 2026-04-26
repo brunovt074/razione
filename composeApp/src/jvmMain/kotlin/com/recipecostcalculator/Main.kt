@@ -19,26 +19,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.recipecostcalculator.application.usecase.costing.CalculateRecipeCostUseCase
-import com.recipecostcalculator.application.usecase.ingredient.CreateIngredientUseCase
-import com.recipecostcalculator.application.usecase.ingredient.UpdateIngredientCostUseCase
-import com.recipecostcalculator.application.usecase.recipe.AddComponentToRecipeUseCase
-import com.recipecostcalculator.application.usecase.recipe.CreateRecipeUseCase
-import com.recipecostcalculator.domain.repository.IngredientRepository
-import com.recipecostcalculator.domain.repository.RecipeRepository
-import com.recipecostcalculator.domain.service.CostCalculatorService
+import com.recipecostcalculator.costing.application.usecase.CalculateRecipeCostQuery
+import com.recipecostcalculator.costing.application.usecase.CalculateRecipeCostUseCase
+import com.recipecostcalculator.costing.domain.service.CostCalculatorService
+import com.recipecostcalculator.costing.domain.service.CostResult
+import com.recipecostcalculator.ingredient.application.usecase.CreateIngredientCommand
+import com.recipecostcalculator.ingredient.application.usecase.CreateIngredientUseCase
+import com.recipecostcalculator.ingredient.application.usecase.GetAllIngredientsUseCase
+import com.recipecostcalculator.ingredient.application.usecase.UpdateIngredientCostCommand
+import com.recipecostcalculator.ingredient.application.usecase.UpdateIngredientCostUseCase
+import com.recipecostcalculator.ingredient.domain.repository.IngredientRepository
 import com.recipecostcalculator.infrastructure.persistence.sqlite.SQLiteDatabase
 import com.recipecostcalculator.infrastructure.persistence.sqlite.repository.SQLiteIngredientRepository
 import com.recipecostcalculator.infrastructure.persistence.sqlite.repository.SQLiteRecipeRepository
+import com.recipecostcalculator.recipe.application.usecase.AddComponentToRecipeCommand
+import com.recipecostcalculator.recipe.application.usecase.AddComponentToRecipeUseCase
+import com.recipecostcalculator.recipe.application.usecase.CreateRecipeCommand
+import com.recipecostcalculator.recipe.application.usecase.CreateRecipeUseCase
+import com.recipecostcalculator.recipe.application.usecase.GetAllRecipesUseCase
+import com.recipecostcalculator.recipe.domain.repository.RecipeRepository
+import com.recipecostcalculator.ui.screens.costing.CostPresenter
 import com.recipecostcalculator.ui.screens.costing.CostScreen
+import com.recipecostcalculator.ui.screens.ingredients.IngredientPresenter
 import com.recipecostcalculator.ui.screens.ingredients.IngredientScreen
+import com.recipecostcalculator.ui.screens.recipes.RecipePresenter
 import com.recipecostcalculator.ui.screens.recipes.RecipeScreen
-
-private enum class AppScreen {
-    INGREDIENTS,
-    RECIPES,
-    COSTS,
-}
 
 fun main() = application {
     val database = remember { SQLiteDatabase() }
@@ -54,12 +59,68 @@ fun main() = application {
 
     val createIngredientUseCase = remember { CreateIngredientUseCase(ingredientRepository) }
     val updateIngredientCostUseCase = remember { UpdateIngredientCostUseCase(ingredientRepository) }
+    val getAllIngredientsUseCase = remember { GetAllIngredientsUseCase(ingredientRepository) }
     val createRecipeUseCase = remember { CreateRecipeUseCase(recipeRepository) }
     val addComponentToRecipeUseCase = remember { AddComponentToRecipeUseCase(recipeRepository) }
+    val getAllRecipesUseCase = remember { GetAllRecipesUseCase(recipeRepository) }
     val calculateRecipeCostUseCase = remember {
         CalculateRecipeCostUseCase(
             recipeRepository = recipeRepository,
             costCalculatorService = costCalculatorService,
+        )
+    }
+
+    val createIngredient = remember {
+        { command: CreateIngredientCommand ->
+            createIngredientUseCase.execute(command)
+            Unit
+        }
+    }
+    val updateIngredientCost = remember {
+        { command: UpdateIngredientCostCommand ->
+            updateIngredientCostUseCase.execute(command)
+            Unit
+        }
+    }
+    val createRecipe = remember {
+        { command: CreateRecipeCommand ->
+            createRecipeUseCase.execute(command)
+            Unit
+        }
+    }
+    val addComponentToRecipe = remember {
+        { command: AddComponentToRecipeCommand ->
+            addComponentToRecipeUseCase.execute(command)
+            Unit
+        }
+    }
+    val calculateRecipeCost = remember {
+        { query: CalculateRecipeCostQuery ->
+            calculateRecipeCostUseCase.execute(query)
+        }
+    }
+
+    val ingredientPresenter = remember {
+        IngredientPresenter(
+            getAllIngredients = getAllIngredientsUseCase,
+            createIngredient = createIngredient,
+            updateIngredientCost = updateIngredientCost,
+        )
+    }
+
+    val recipePresenter = remember {
+        RecipePresenter(
+            getAllIngredients = getAllIngredientsUseCase,
+            getAllRecipes = getAllRecipesUseCase,
+            createRecipe = createRecipe,
+            addComponentToRecipe = addComponentToRecipe,
+        )
+    }
+
+    val costPresenter = remember {
+        CostPresenter(
+            getAllRecipes = getAllRecipesUseCase,
+            calculateRecipeCost = calculateRecipeCost,
         )
     }
 
@@ -70,13 +131,9 @@ fun main() = application {
         MaterialTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 AppContent(
-                    ingredientRepository = ingredientRepository,
-                    recipeRepository = recipeRepository,
-                    createIngredientUseCase = createIngredientUseCase,
-                    updateIngredientCostUseCase = updateIngredientCostUseCase,
-                    createRecipeUseCase = createRecipeUseCase,
-                    addComponentToRecipeUseCase = addComponentToRecipeUseCase,
-                    calculateRecipeCostUseCase = calculateRecipeCostUseCase,
+                    ingredientPresenter = ingredientPresenter,
+                    recipePresenter = recipePresenter,
+                    costPresenter = costPresenter,
                 )
             }
         }
@@ -85,13 +142,9 @@ fun main() = application {
 
 @Composable
 private fun AppContent(
-    ingredientRepository: IngredientRepository,
-    recipeRepository: RecipeRepository,
-    createIngredientUseCase: CreateIngredientUseCase,
-    updateIngredientCostUseCase: UpdateIngredientCostUseCase,
-    createRecipeUseCase: CreateRecipeUseCase,
-    addComponentToRecipeUseCase: AddComponentToRecipeUseCase,
-    calculateRecipeCostUseCase: CalculateRecipeCostUseCase,
+    ingredientPresenter: IngredientPresenter,
+    recipePresenter: RecipePresenter,
+    costPresenter: CostPresenter,
 ) {
     var selectedScreen by remember { mutableStateOf(AppScreen.INGREDIENTS) }
 
@@ -108,21 +161,15 @@ private fun AppContent(
 
         when (selectedScreen) {
             AppScreen.INGREDIENTS -> IngredientScreen(
-                ingredientRepository = ingredientRepository,
-                createIngredientUseCase = createIngredientUseCase,
-                updateIngredientCostUseCase = updateIngredientCostUseCase,
+                presenter = ingredientPresenter,
             )
 
             AppScreen.RECIPES -> RecipeScreen(
-                ingredientRepository = ingredientRepository,
-                recipeRepository = recipeRepository,
-                createRecipeUseCase = createRecipeUseCase,
-                addComponentToRecipeUseCase = addComponentToRecipeUseCase,
+                presenter = recipePresenter,
             )
 
             AppScreen.COSTS -> CostScreen(
-                recipeRepository = recipeRepository,
-                calculateRecipeCostUseCase = calculateRecipeCostUseCase,
+                presenter = costPresenter,
             )
         }
     }

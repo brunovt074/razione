@@ -30,7 +30,7 @@ for skill_file in "$SKILLS_DIR"/*/SKILL.md; do
 
   if [[ -z "$scope" ]]; then
     echo "  warning: $skill_name has no scope"
-    ((warned++))
+    warned=$((warned + 1))
     continue
   fi
 
@@ -70,9 +70,12 @@ EOF
       fi
       echo "  added   [$skill_name] -> $(basename "$agents_file")"
     fi
-    ((synced+=1))
+
+    synced=$((synced + 1))
   done
 done
 
 echo "Synced: $synced"
-[[ $warned -gt 0 ]] && echo "Warned: $warned"
+if [[ $warned -gt 0 ]]; then
+  echo "Warned: $warned"
+fi

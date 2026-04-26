@@ -15,38 +15,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.application.usecase.ingredient.CreateIngredientUseCase
-import com.recipecostcalculator.application.usecase.ingredient.UpdateIngredientCostUseCase
-import com.recipecostcalculator.domain.model.ingredient.Ingredient
-import com.recipecostcalculator.domain.model.valueobject.Money
-import com.recipecostcalculator.domain.model.valueobject.UnitOfMeasure
-import com.recipecostcalculator.domain.repository.IngredientRepository
+import com.recipecostcalculator.ingredient.domain.model.Ingredient
+import com.recipecostcalculator.recipe.domain.model.UnitOfMeasure
 import com.recipecostcalculator.ui.components.SimpleDropdown
-import com.recipecostcalculator.ui.components.parseDecimalOrNull
 
 @Composable
 fun IngredientScreen(
-    ingredientRepository: IngredientRepository,
-    createIngredientUseCase: CreateIngredientUseCase,
-    updateIngredientCostUseCase: UpdateIngredientCostUseCase,
+    presenter: IngredientPresenter,
 ) {
-    var refreshKey by remember { mutableStateOf(0) }
-    val ingredients = remember(refreshKey) { ingredientRepository.findAll() }
-
-    var nameInput by remember { mutableStateOf("") }
-    var costInput by remember { mutableStateOf("") }
-    var selectedUnit by remember { mutableStateOf(UnitOfMeasure.GRAM) }
-
-    var selectedIngredientId by remember { mutableStateOf<Long?>(null) }
-    var updatedCostInput by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf<String?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -63,44 +41,26 @@ fun IngredientScreen(
             ) {
                 Text("Crear ingrediente", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
-                    value = nameInput,
-                    onValueChange = { nameInput = it },
+                    value = presenter.nameInput,
+                    onValueChange = presenter::updateNameInput,
                     label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
-                    value = costInput,
-                    onValueChange = { costInput = it },
+                    value = presenter.costInput,
+                    onValueChange = presenter::updateCostInput,
                     label = { Text("Costo por unidad") },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 SimpleDropdown(
                     label = "Unidad",
                     options = UnitOfMeasure.entries,
-                    selected = selectedUnit,
+                    selected = presenter.selectedUnit,
                     optionLabel = { "${it.name} (${it.symbol})" },
-                    onSelected = { selectedUnit = it },
+                    onSelected = presenter::updateSelectedUnit,
                 )
                 Button(
-                    onClick = {
-                        val cost = parseDecimalOrNull(costInput)
-                        if (nameInput.isBlank() || cost == null) {
-                            message = "Completa nombre y costo valido"
-                            return@Button
-                        }
-
-                        createIngredientUseCase(
-                            CreateIngredientUseCase.Command(
-                                name = nameInput,
-                                unit = selectedUnit,
-                                costPerUnit = Money.of(cost),
-                            ),
-                        )
-                        nameInput = ""
-                        costInput = ""
-                        message = "Ingrediente creado"
-                        refreshKey++
-                    },
+                    onClick = presenter::createIngredient,
                 ) {
                     Text("Guardar")
                 }
@@ -115,37 +75,19 @@ fun IngredientScreen(
                 Text("Actualizar costo", style = MaterialTheme.typography.titleMedium)
                 SimpleDropdown(
                     label = "Ingrediente",
-                    options = ingredients,
-                    selected = ingredients.firstOrNull { it.id == selectedIngredientId },
+                    options = presenter.ingredients,
+                    selected = presenter.currentSelectedIngredient(),
                     optionLabel = { "${it.name} (${it.costPerUnit.toDisplay()}/${it.unit.symbol})" },
-                    onSelected = {
-                        selectedIngredientId = it.id
-                        updatedCostInput = it.costPerUnit.amount.toPlainString()
-                    },
+                    onSelected = presenter::selectIngredient,
                 )
                 OutlinedTextField(
-                    value = updatedCostInput,
-                    onValueChange = { updatedCostInput = it },
+                    value = presenter.updatedCostInput,
+                    onValueChange = presenter::updateUpdatedCostInput,
                     label = { Text("Nuevo costo") },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Button(
-                    onClick = {
-                        val ingredientId = selectedIngredientId
-                        val cost = parseDecimalOrNull(updatedCostInput)
-                        if (ingredientId == null || cost == null) {
-                            message = "Selecciona ingrediente y costo valido"
-                            return@Button
-                        }
-                        updateIngredientCostUseCase(
-                            UpdateIngredientCostUseCase.Command(
-                                ingredientId = ingredientId,
-                                costPerUnit = Money.of(cost),
-                            ),
-                        )
-                        message = "Costo actualizado"
-                        refreshKey++
-                    },
+                    onClick = presenter::updateIngredientCost,
                 ) {
                     Text("Actualizar")
                 }
@@ -153,15 +95,15 @@ fun IngredientScreen(
         }
 
         Text("Listado", style = MaterialTheme.typography.titleMedium)
-        if (ingredients.isEmpty()) {
+        if (presenter.ingredients.isEmpty()) {
             Text("No hay ingredientes cargados")
         } else {
-            ingredients.forEach { ingredient ->
+            presenter.ingredients.forEach { ingredient ->
                 IngredientRow(ingredient)
             }
         }
 
-        message?.let {
+        presenter.message?.let {
             Spacer(modifier = Modifier.height(4.dp))
             Text(it)
         }

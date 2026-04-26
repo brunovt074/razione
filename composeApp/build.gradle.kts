@@ -22,7 +22,6 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.ui)
             implementation(projects.shared)
-            implementation("org.xerial:sqlite-jdbc:3.46.0.0")
         }
 
         jvmTest.dependencies {
