@@ -6,5 +6,5 @@ data class RecipeIngredient(
     val ingredientId: Long,
     val ingredient: Ingredient? = null,
     val usagePerPizza: Double?,
-    val yieldPizzas: Int?
+    val yieldPizzas: Long?
 )
