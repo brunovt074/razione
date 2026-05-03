@@ -65,6 +65,15 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+            // Lifecycle for JVM/Desktop
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
+            // Koin for Desktop
+            implementation("io.insert-koin:koin-core:4.2.0")
+            implementation("io.insert-koin:koin-compose:4.2.0")
+            // SQLDelight for Desktop
+            implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+            implementation("app.cash.sqldelight:jdbc-driver:2.1.0")
         }
 
         androidMain.dependencies {

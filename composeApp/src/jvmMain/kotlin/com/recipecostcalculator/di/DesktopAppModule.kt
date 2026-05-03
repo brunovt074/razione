@@ -1,8 +1,7 @@
 package com.recipecostcalculator.di
 
-import android.content.Context
-import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.recipecostcalculator.db.PizzeriaDatabase
 import com.recipecostcalculator.data.local.DatabaseSeeder
 import com.recipecostcalculator.data.local.repository.AdditionalVariableCostRepositoryImpl
@@ -21,16 +20,14 @@ import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val androidAppModule = module {
+val desktopAppModule = module {
     single<SqlDriver> {
-        AndroidSqliteDriver(
-            schema = PizzeriaDatabase.Schema,
-            context = androidContext(),
-            name = "pizzeria.db"
+        JdbcSqliteDriver(
+            url = "jdbc:sqlite:pizzeria.db",
+            schema = PizzeriaDatabase.Schema
         )
     }
 

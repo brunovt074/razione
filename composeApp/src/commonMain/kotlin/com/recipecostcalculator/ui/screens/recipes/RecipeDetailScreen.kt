@@ -43,7 +43,7 @@ import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
-import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 

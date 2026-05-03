@@ -42,7 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.FixedCost
-import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.FixedCosts
 

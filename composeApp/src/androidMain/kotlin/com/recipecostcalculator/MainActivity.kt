@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.Text
 import com.recipecostcalculator.di.androidAppModule
-import com.recipecostcalculator.di.appModule
 import com.recipecostcalculator.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -20,14 +18,14 @@ class MainActivity : ComponentActivity() {
         startKoin {
             androidLogger()
             androidContext(this@MainActivity)
-            modules(appModule, androidAppModule)
+            modules(androidAppModule)
         }
 
-        val dashboardViewModel: com.recipecostcalculator.presentation.viewmodel.DashboardViewModel by inject()
-        val recipesViewModel: com.recipecostcalculator.presentation.viewmodel.RecipesViewModel by inject()
-        val ingredientsViewModel: com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel by inject()
-        val fixedCostsViewModel: com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel by inject()
-        val settingsViewModel: com.recipecostcalculator.presentation.viewmodel.SettingsViewModel by inject()
+        val dashboardViewModel: com.recipecostcalculator.ui.viewmodel.DashboardViewModel by inject()
+        val recipesViewModel: com.recipecostcalculator.ui.viewmodel.RecipesViewModel by inject()
+        val ingredientsViewModel: com.recipecostcalculator.ui.viewmodel.IngredientsViewModel by inject()
+        val fixedCostsViewModel: com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel by inject()
+        val settingsViewModel: com.recipecostcalculator.ui.viewmodel.SettingsViewModel by inject()
         val seeder: com.recipecostcalculator.data.local.DatabaseSeeder by inject()
 
         setContent {

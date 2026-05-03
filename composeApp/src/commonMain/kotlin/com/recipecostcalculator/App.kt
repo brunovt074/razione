@@ -14,11 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.presentation.viewmodel.DashboardViewModel
-import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
-import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
-import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
-import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
+import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
+import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
 import com.recipecostcalculator.ui.screens.configuration.ConfigurationScreen
 import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
 import com.recipecostcalculator.ui.screens.fixedcosts.FixedCostsScreen
