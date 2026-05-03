@@ -1,19 +1,23 @@
 package com.recipecostcalculator
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.recipecostcalculator.ui.strings.es.Navigation
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -26,8 +30,9 @@ import com.recipecostcalculator.ui.screens.ingredients.IngredientsScreen
 import com.recipecostcalculator.ui.screens.more.MoreScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipeDetailScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipesScreen
-import com.recipecostcalculator.ui.strings.es.Navigation
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun App(
     dashboardViewModel: DashboardViewModel,
@@ -36,14 +41,15 @@ fun App(
     fixedCostsViewModel: FixedCostsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
     var showFixedCosts by remember { mutableStateOf(false) }
     var showConfiguration by remember { mutableStateOf(false) }
     var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
+    val pagerState = rememberPagerState(pageCount = { TAB_COUNT })
+    val coroutineScope = rememberCoroutineScope()
 
     val tabs = listOf(
         TabItem(Navigation.home, "H") { DashboardScreen(dashboardViewModel) },
-        TabItem(Navigation.recipes, "R") { 
+        TabItem(Navigation.recipes, "R") {
             if (selectedRecipeId != null) {
                 RecipeDetailScreenWrapper(
                     recipeId = selectedRecipeId,
@@ -58,7 +64,7 @@ fun App(
             }
         },
         TabItem(Navigation.ingredients, "I") { IngredientsScreen(ingredientsViewModel) },
-        TabItem(Navigation.more, "M") { 
+        TabItem(Navigation.more, "M") {
             MoreScreen(
                 fixedCostsViewModel = fixedCostsViewModel,
                 settingsViewModel = settingsViewModel,
@@ -75,15 +81,20 @@ fun App(
                     NavigationBarItem(
                         icon = { Text(tab.icon) },
                         label = { Text(tab.title) },
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index }
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        }
                     )
                 }
             }
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
         ) {
             when {
                 showFixedCosts -> FixedCostsScreen(
@@ -94,7 +105,12 @@ fun App(
                     settingsViewModel = settingsViewModel,
                     onBack = { showConfiguration = false }
                 )
-                else -> tabs[selectedTab].content()
+                else -> HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                ) { page ->
+                    tabs[page].content()
+                }
             }
         }
     }
@@ -105,6 +121,8 @@ data class TabItem(
     val icon: String,
     val content: @Composable () -> Unit
 )
+
+private const val TAB_COUNT = 4
 
 @Composable
 private fun RecipeDetailScreenWrapper(
