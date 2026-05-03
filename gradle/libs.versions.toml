@@ -20,10 +20,10 @@ kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.
 
 # Koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
-koin-core = { module = "io.insert-koin:koin-core" }
-koin-android = { module = "io.insert-koin:koin-android" }
-koin-compose = { module = "io.insert-koin:koin-compose" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 
 # Lifecycle
 lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }

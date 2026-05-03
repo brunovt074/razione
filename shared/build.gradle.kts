@@ -2,10 +2,17 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("com.android.library")
 }
 
 kotlin {
-    jvm()
+    jvm {
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
+    jvmToolchain(21)
+    androidTarget()
 
     sourceSets {
         commonMain.dependencies {
@@ -25,11 +32,34 @@ kotlin {
             // Lifecycle (for ViewModel)
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.runtime.ktx)
+
+            // Koin
+            implementation(libs.koin.core)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+
+        androidUnitTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+
+        androidMain.dependencies {
+            implementation(libs.sqldelight.driver.android)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.sqldelight.driver.sqlite)
+        }
+    }
+}
+
+android {
+    namespace = "com.recipecostcalculator"
+    compileSdk = 36
+    defaultConfig {
+        minSdk = 26
     }
 }
 
