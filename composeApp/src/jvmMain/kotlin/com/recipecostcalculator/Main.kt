@@ -3,6 +3,7 @@ package com.recipecostcalculator
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.recipecostcalculator.di.desktopAppModule
+import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -16,12 +17,13 @@ fun main() = application {
     startKoin {
         modules(desktopAppModule)
     }
-    
+
     val injector = object : KoinComponent {
         val dashboardViewModel: DashboardViewModel by inject()
         val recipesViewModel: RecipesViewModel by inject()
         val ingredientsViewModel: IngredientsViewModel by inject()
         val fixedCostsViewModel: FixedCostsViewModel by inject()
+        val additionalCostsViewModel: AdditionalVariableCostsViewModel by inject()
         val settingsViewModel: SettingsViewModel by inject()
     }
 
@@ -34,6 +36,7 @@ fun main() = application {
             recipesViewModel = injector.recipesViewModel,
             ingredientsViewModel = injector.ingredientsViewModel,
             fixedCostsViewModel = injector.fixedCostsViewModel,
+            additionalCostsViewModel = injector.additionalCostsViewModel,
             settingsViewModel = injector.settingsViewModel
         )
     }

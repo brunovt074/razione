@@ -14,15 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
-import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.strings.es.More
 
 @Composable
 fun MoreScreen(
-    fixedCostsViewModel: FixedCostsViewModel,
-    settingsViewModel: SettingsViewModel,
     onNavigateToFixedCosts: () -> Unit,
-    onNavigateToConfiguration: () -> Unit
+    onNavigateToConfiguration: () -> Unit,
+    onNavigateToAdditionalCosts: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -31,20 +29,26 @@ fun MoreScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Más",
+            text = More.title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
 
         MenuCard(
-            title = "Costos Fijos",
-            subtitle = "Alquiler, servicios",
+            title = More.fixedCosts,
+            subtitle = More.fixedCostsSubtitle,
             onClick = onNavigateToFixedCosts
         )
 
         MenuCard(
-            title = "Configuración",
-            subtitle = "Ajustes de la app",
+            title = More.supplyCosts,
+            subtitle = More.supplyCostsSubtitle,
+            onClick = onNavigateToAdditionalCosts
+        )
+
+        MenuCard(
+            title = More.configuration,
+            subtitle = More.configurationSubtitle,
             onClick = onNavigateToConfiguration
         )
     }
