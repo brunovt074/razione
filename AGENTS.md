@@ -27,9 +27,10 @@ Skipping this protocol produces inconsistent code and failed reviews.
 | Language | Kotlin 2.2.21 |
 | Platform | Kotlin Multiplatform (Android-first, desktop planned) |
 | Architecture | Clean Architecture / DDD / MVI |
-| Database | SQLite (Room for mobile, JDBC for desktop) |
-| UI | Jetpack Compose 1.9.1 |
-| DI | Hilt (mobile-first) |
+| Database | SQLDelight (SQLite nativo por plataforma) |
+| UI | Jetpack Compose 1.9.1 + Voyager (navegación) |
+| DI | Koin 4.2.0 (KMP) |
+| Navigation | Voyager 1.1.0-beta02 |
 | Money | java.math.BigDecimal |
 | Date/Time | kotlinx-datetime |
 
@@ -136,28 +137,39 @@ Branch chaining is allowed and preferred over direct merge to `master`.
 ## Architecture Rules
 
 ```
-shared/src/jvmMain/kotlin/com/recipecostcalculator/
-├── ingredient/
+shared/src/
+├── commonMain/kotlin/com/recipecostcalculator/
 │   ├── domain/
 │   │   ├── model/
-│   │   └── repository/
-│   └── application/usecase/
-├── recipe/
-│   ├── domain/
-│   │   ├── model/
-│   │   └── repository/
-│   └── application/usecase/
-├── costing/
-│   ├── domain/service/
-│   └── application/usecase/
-├── financial/
-│   └── domain/model/
-└── infrastructure/
-    ├── persistence/
-    │   └── sqlite/
-    │       ├── migration/
-    │       └── repository/
-    └── {module}/
+│   │   ├── repository/
+│   │   └── usecase/
+│   ├── data/
+│   │   ├── local/
+│   │   │   ├── db/
+│   │   │   └── repository/
+│   │   └── remote/              (placeholder vacío — v4 API)
+│   ├── presentation/
+│   │   ├── viewmodel/
+│   │   └── util/
+│   └── di/
+│       └── AppModule.kt
+├── commonMain/sqldelight/        (DDL SQLDelight)
+├── androidMain/kotlin/
+│   └── data/local/db/
+│       └── DriverFactory.android.kt
+├── jvmMain/kotlin/               (stub desktop)
+└── commonTest/kotlin/
+```
+
+### Mobile-First Source Sets
+
+```
+composeApp/src/
+├── commonMain/kotlin/           (UI compartida)
+├── androidMain/kotlin/
+│   └── MainActivity.kt
+├── jvmMain/kotlin/               (desktop)
+└── iosMain/kotlin/               (preparado para futuro)
 ```
 
 ### Dependency Rule

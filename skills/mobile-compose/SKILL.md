@@ -46,8 +46,7 @@ sealed class ScreenIntent {
 }
 
 // 3. ViewModel: Processes intents and emits new state via StateFlow
-@HiltViewModel
-class ScreenViewModel @Inject constructor(
+class ScreenViewModel(
     private val repository: ItemRepository
 ) : ViewModel() {
 
@@ -89,7 +88,7 @@ State flows DOWN, events flow UP:
 ```kotlin
 @Composable
 fun Screen(
-    viewModel: ScreenViewModel = hiltViewModel()
+    viewModel: ScreenViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -168,7 +167,7 @@ com.example.app/
 - Use Cases contain ONLY business logic, no data access
 - Repository interfaces live in Domain, implementations in Data
 
-### 4. Hilt Dependency Injection - MANDATORY
+### 4. Koin Dependency Injection - MANDATORY (para KMP)
 
 **Module definition:**
 
@@ -203,8 +202,7 @@ object AppModule {
 **ViewModel injection:**
 
 ```kotlin
-@HiltViewModel
-class ScreenViewModel @Inject constructor(
+class ScreenViewModel(
     private val getItemsUseCase: GetItemsUseCase,
     private val saveItemUseCase: SaveItemUseCase
 ) : ViewModel() {
@@ -213,9 +211,9 @@ class ScreenViewModel @Inject constructor(
 ```
 
 **RULES:**
-- Use `@HiltViewModel` for ALL ViewModels
+- Use `viewModel { ScreenViewModel(...) }` via Koin for ViewModels
 - Inject Use Cases, NOT raw repositories (cleaner API)
-- Use `@androidx.hilt.navigation.compose.hiltViewModel()` in Composables
+- Use `koinViewModel<ScreenViewModel>()` in Composables
 - NEVER instantiate ViewModels manually
 
 ### 5. StateFlow + Coroutines - The ONLY way to handle async
@@ -439,7 +437,7 @@ LazyColumn(
 2. **NEVER expose MutableStateFlow** - Always expose `StateFlow`
 3. **NEVER use `lifecycleScope` in ViewModels** - Use `viewModelScope`
 4. **NEVER put Android dependencies in Domain layer** - Keep it pure Kotlin
-5. **NEVER directly instantiate dependencies** - Always use Hilt injection
+5. **NEVER directly instantiate dependencies** - Always use Koin injection
 6. **NEVER use `remember` for business state** - Only for UI state
 7. **NEVER do heavy computation in Composables** - Move to ViewModel or UseCase
 8. **NEVER ignore WindowSizeClass** - Mobile-first means responsive from day one
@@ -507,6 +505,6 @@ class FeatureNameViewModelTest {
 - Use `collectAsStateWithLifecycle()` instead of `collectAsState()` for lifecycle-aware collection
 - When using Room with Flow, use `asDomain()` mapper at the repository level
 - For navigation arguments, always use safe-args or type-safe routing
-- When testing ViewModels with Hilt, use `hiltViewModel()` in test
+- When testing ViewModels with Koin, use `koinViewModel()` in test
 - WindowSizeClass requires `@androidx.window:window:1.0.0` dependency
 - Dynamic color requires `androidx.compose.material3:material3:1.1.0+` on Android 12+
