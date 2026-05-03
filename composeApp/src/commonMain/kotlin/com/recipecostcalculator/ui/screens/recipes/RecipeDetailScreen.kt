@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.recetas
+package com.recipecostcalculator.ui.screens.recipes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,7 +49,7 @@ import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecetaDetailScreen(
+fun RecipeDetailScreen(
     recipeId: Long?,
     viewModel: RecipesViewModel,
     onBack: () -> Unit

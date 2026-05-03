@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.mas
+package com.recipecostcalculator.ui.screens.more
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,11 +18,11 @@ import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
 
 @Composable
-fun MasScreen(
-    costosFijosViewModel: FixedCostsViewModel,
+fun MoreScreen(
+    fixedCostsViewModel: FixedCostsViewModel,
     settingsViewModel: SettingsViewModel,
-    onNavigateToCostosFijos: () -> Unit,
-    onNavigateToConfiguracion: () -> Unit
+    onNavigateToFixedCosts: () -> Unit,
+    onNavigateToConfiguration: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -39,13 +39,13 @@ fun MasScreen(
         MenuCard(
             title = "Costos Fijos",
             subtitle = "Alquiler, servicios",
-            onClick = onNavigateToCostosFijos
+            onClick = onNavigateToFixedCosts
         )
 
         MenuCard(
             title = "Configuración",
             subtitle = "Ajustes de la app",
-            onClick = onNavigateToConfiguracion
+            onClick = onNavigateToConfiguration
         )
     }
 }

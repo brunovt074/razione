@@ -19,50 +19,51 @@ import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
-import com.recipecostcalculator.ui.screens.configuracion.ConfiguracionScreen
-import com.recipecostcalculator.ui.screens.costosfijos.CostosFijosScreen
+import com.recipecostcalculator.ui.screens.configuration.ConfigurationScreen
 import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
-import com.recipecostcalculator.ui.screens.ingredientes.IngredientesScreen
-import com.recipecostcalculator.ui.screens.mas.MasScreen
-import com.recipecostcalculator.ui.screens.recetas.RecetaDetailScreen
-import com.recipecostcalculator.ui.screens.recetas.RecetasScreen
+import com.recipecostcalculator.ui.screens.fixedcosts.FixedCostsScreen
+import com.recipecostcalculator.ui.screens.ingredients.IngredientsScreen
+import com.recipecostcalculator.ui.screens.more.MoreScreen
+import com.recipecostcalculator.ui.screens.recipes.RecipeDetailScreen
+import com.recipecostcalculator.ui.screens.recipes.RecipesScreen
+import com.recipecostcalculator.ui.strings.es.Navigation
 
 @Composable
 fun App(
     dashboardViewModel: DashboardViewModel,
-    recetasViewModel: RecipesViewModel,
-    ingredientesViewModel: IngredientsViewModel,
-    costosFijosViewModel: FixedCostsViewModel,
+    recipesViewModel: RecipesViewModel,
+    ingredientsViewModel: IngredientsViewModel,
+    fixedCostsViewModel: FixedCostsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var showCostosFijos by remember { mutableStateOf(false) }
-    var showConfiguracion by remember { mutableStateOf(false) }
+    var showFixedCosts by remember { mutableStateOf(false) }
+    var showConfiguration by remember { mutableStateOf(false) }
     var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
 
     val tabs = listOf(
-        TabItem("Inicio", "H") { DashboardScreen(dashboardViewModel) },
-        TabItem("Recetas", "R") { 
+        TabItem(Navigation.home, "H") { DashboardScreen(dashboardViewModel) },
+        TabItem(Navigation.recipes, "R") { 
             if (selectedRecipeId != null) {
-                RecetaDetailScreenWrapper(
+                RecipeDetailScreenWrapper(
                     recipeId = selectedRecipeId,
-                    recetasViewModel = recetasViewModel,
+                    recipesViewModel = recipesViewModel,
                     onBack = { selectedRecipeId = null }
                 )
             } else {
-                RecetasScreen(
-                    viewModel = recetasViewModel,
-                    onRecipeClick = { selectedRecipeId = it }
+                RecipesScreen(
+                    viewModel = recipesViewModel,
+                    onRecipeClick = { id -> selectedRecipeId = id }
                 )
             }
         },
-        TabItem("Ingredientes", "I") { IngredientesScreen(ingredientesViewModel) },
-        TabItem("Más", "M") { 
-            MasScreen(
-                costosFijosViewModel = costosFijosViewModel,
+        TabItem(Navigation.ingredients, "I") { IngredientsScreen(ingredientsViewModel) },
+        TabItem(Navigation.more, "M") { 
+            MoreScreen(
+                fixedCostsViewModel = fixedCostsViewModel,
                 settingsViewModel = settingsViewModel,
-                onNavigateToCostosFijos = { showCostosFijos = true },
-                onNavigateToConfiguracion = { showConfiguracion = true }
+                onNavigateToFixedCosts = { showFixedCosts = true },
+                onNavigateToConfiguration = { showConfiguration = true }
             )
         }
     )
@@ -85,13 +86,13 @@ fun App(
             modifier = Modifier.padding(innerPadding)
         ) {
             when {
-                showCostosFijos -> CostosFijosScreen(
-                    viewModel = costosFijosViewModel,
-                    onBack = { showCostosFijos = false }
+                showFixedCosts -> FixedCostsScreen(
+                    viewModel = fixedCostsViewModel,
+                    onBack = { showFixedCosts = false }
                 )
-                showConfiguracion -> ConfiguracionScreen(
+                showConfiguration -> ConfigurationScreen(
                     settingsViewModel = settingsViewModel,
-                    onBack = { showConfiguracion = false }
+                    onBack = { showConfiguration = false }
                 )
                 else -> tabs[selectedTab].content()
             }
@@ -106,14 +107,14 @@ data class TabItem(
 )
 
 @Composable
-private fun RecetaDetailScreenWrapper(
+private fun RecipeDetailScreenWrapper(
     recipeId: Long?,
-    recetasViewModel: RecipesViewModel,
+    recipesViewModel: RecipesViewModel,
     onBack: () -> Unit
 ) {
-    RecetaDetailScreen(
+    RecipeDetailScreen(
         recipeId = recipeId,
-        viewModel = recetasViewModel,
+        viewModel = recipesViewModel,
         onBack = onBack
     )
 }

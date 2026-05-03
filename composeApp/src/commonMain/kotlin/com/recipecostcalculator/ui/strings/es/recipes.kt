@@ -1,0 +1,24 @@
+package com.recipecostcalculator.ui.strings.es
+
+object Recipes {
+    val title = "Recetas"
+    val newRecipe = "Nueva Receta"
+    val editRecipe = "Editar Receta"
+    val recipeName = "Nombre de la receta"
+    val parentRecipe = "Receta padre (herencia)"
+    val noParentRecipe = "Ninguna (receta base)"
+    val inheritedIngredients = "Ingredientes heredados (solo lectura)"
+    val ownIngredients = "Ingredientes propios"
+    val ownIngredientsHint = "Ingredientes propios (swipe para eliminar)"
+    val validatingCycles = "Validando ciclos..."
+    val cycleError = "Error: Esta selección crearía un ciclo de herencia"
+    val deleteIngredient = "Eliminar ingrediente"
+    val deleteIngredientFromRecipe = "¿Eliminar este ingrediente de la receta?"
+    val baseRecipe = "Receta base"
+    val inheritsFromAnother = "Hereda de otra receta"
+    val noIngredients = "Sin ingredientes"
+    val noIngredientsHint = "Sin ingredientes - toca + para agregar"
+    val ingredientCount = "ingredientes"
+    val cost = "Costo:"
+    val noRecipes = "No hay recetas. Toca + para crear una."
+}

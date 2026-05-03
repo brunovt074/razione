@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.configuracion
+package com.recipecostcalculator.ui.screens.configuration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,7 +17,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,10 +29,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.strings.es.Configuration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfiguracionScreen(
+fun ConfigurationScreen(
     settingsViewModel: SettingsViewModel,
     onBack: () -> Unit
 ) {
@@ -44,7 +44,7 @@ fun ConfiguracionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Configuración") },
+                title = { Text(Configuration.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Text("←")
@@ -72,7 +72,7 @@ fun ConfiguracionScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Producción",
+                        text = Configuration.production,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -87,7 +87,7 @@ fun ConfiguracionScreen(
                                 }
                             }
                         },
-                        label = { Text("Batch size") },
+                        label = { Text(Configuration.batchSize) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
@@ -102,7 +102,7 @@ fun ConfiguracionScreen(
                                 }
                             }
                         },
-                        label = { Text("Producción mensual estimada") },
+                        label = { Text(Configuration.estimatedMonthlyProduction) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
@@ -120,19 +120,19 @@ fun ConfiguracionScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Costos",
+                        text = Configuration.costs,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text("Desperdicio: ${(settings.wasteFactor * 100).toInt()}%")
+                    Text("${Configuration.waste}: ${(settings.wasteFactor * 100).toInt()}%")
                     Slider(
                         value = settings.wasteFactor.toFloat(),
                         onValueChange = { settingsViewModel.updateWasteFactor(it.toDouble()) },
                         valueRange = 0f..0.5f
                     )
 
-                    Text("Descuento: ${(settings.discountPct * 100).toInt()}%")
+                    Text("${Configuration.discount}: ${(settings.discountPct * 100).toInt()}%")
                     Slider(
                         value = settings.discountPct.toFloat(),
                         onValueChange = { settingsViewModel.updateDiscountPct(it.toDouble()) },
@@ -152,12 +152,12 @@ fun ConfiguracionScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Ventas",
+                        text = Configuration.sales,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text("Margen objetivo: ${(settings.targetMargin * 100).toInt()}%")
+                    Text("${Configuration.targetMargin}: ${(settings.targetMargin * 100).toInt()}%")
                     Slider(
                         value = settings.targetMargin.toFloat(),
                         onValueChange = { settingsViewModel.updateTargetMargin(it.toDouble()) },
