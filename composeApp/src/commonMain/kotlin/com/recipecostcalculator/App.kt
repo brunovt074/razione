@@ -1,5 +1,11 @@
 package com.recipecostcalculator
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -41,6 +47,8 @@ import com.recipecostcalculator.ui.screens.more.MoreScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipeDetailScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipesScreen
 import kotlinx.coroutines.launch
+
+private const val ANIMATION_DURATION = 300
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -107,22 +115,66 @@ fun App(
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-            when {
-                showFixedCosts -> FixedCostsScreen(
+            AnimatedVisibility(
+                visible = showFixedCosts,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
+            ) {
+                FixedCostsScreen(
                     viewModel = fixedCostsViewModel,
                     onBack = { showFixedCosts = false }
                 )
-                showAdditionalCosts -> AdditionalVariableCostsScreen(
+            }
+
+            AnimatedVisibility(
+                visible = showAdditionalCosts,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
+            ) {
+                AdditionalVariableCostsScreen(
                     viewModel = additionalCostsViewModel,
                     onBack = { showAdditionalCosts = false }
                 )
-                showConfiguration -> ConfigurationScreen(
+            }
+
+            AnimatedVisibility(
+                visible = showConfiguration,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(ANIMATION_DURATION)
+                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
+            ) {
+                ConfigurationScreen(
                     settingsViewModel = settingsViewModel,
                     onBack = { showConfiguration = false }
                 )
-                else -> HorizontalPager(
+            }
+
+            AnimatedVisibility(
+                visible = !showFixedCosts && !showAdditionalCosts && !showConfiguration,
+                enter = fadeIn(animationSpec = tween(ANIMATION_DURATION)),
+                exit = fadeOut(animationSpec = tween(ANIMATION_DURATION))
+            ) {
+                HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    beyondViewportPageCount = 1
                 ) { page ->
                     tabs[page].content()
                 }

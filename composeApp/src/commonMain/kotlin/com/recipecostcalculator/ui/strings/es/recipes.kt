@@ -21,4 +21,5 @@ object Recipes {
     val ingredientCount = "ingredientes"
     val cost = "Costo:"
     val noRecipes = "No hay recetas. Toca + para crear una."
+    val addIngredient = "Agregar Ingrediente"
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -301,7 +302,7 @@ private fun IngredientForm(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = purchaseUnitExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
             )
             ExposedDropdownMenu(
                 expanded = purchaseUnitExpanded,
@@ -349,7 +350,7 @@ private fun IngredientForm(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = usageUnitExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
             )
             ExposedDropdownMenu(
                 expanded = usageUnitExpanded,
