@@ -15,6 +15,7 @@ import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
+import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -54,6 +55,7 @@ val desktopAppModule = module {
     viewModel<IngredientsViewModel> { IngredientsViewModel(ingredientRepository = get()) }
     viewModel<RecipesViewModel> { RecipesViewModel(recipeRepository = get(), calculateRecipeCostUseCase = get()) }
     viewModel<FixedCostsViewModel> { FixedCostsViewModel(fixedCostRepository = get()) }
+    viewModel<AdditionalVariableCostsViewModel> { AdditionalVariableCostsViewModel(additionalCostRepository = get()) }
     viewModel<DashboardViewModel> {
         DashboardViewModel(
             recipeRepository = get(),

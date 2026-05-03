@@ -5,6 +5,8 @@ import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 class AdditionalVariableCostRepositoryImpl(
@@ -12,18 +14,29 @@ class AdditionalVariableCostRepositoryImpl(
 ) : AdditionalVariableCostRepository {
 
     private val queries = db.additionalVariableCostsQueries
+    private val refreshSignal = MutableSharedFlow<Unit>(replay = 1)
 
-    override fun observeAll(): Flow<List<AdditionalVariableCost>> = kotlinx.coroutines.flow.flow {
-        val list = queries.selectAll().executeAsList().map { row ->
-            AdditionalVariableCost(
-                id = row.id,
-                recipeId = row.recipe_id,
-                concept = row.concept,
-                unitCost = row.unit_cost,
-                note = row.note
-            )
+    init {
+        refreshSignal.tryEmit(Unit)
+    }
+
+    override fun observeAll(): Flow<List<AdditionalVariableCost>> = refreshSignal.flatMapLatest {
+        kotlinx.coroutines.flow.flow {
+            val list = queries.selectAll().executeAsList().map { row ->
+                AdditionalVariableCost(
+                    id = row.id,
+                    recipeId = row.recipe_id,
+                    concept = row.concept,
+                    unitCost = row.unit_cost,
+                    note = row.note
+                )
+            }
+            emit(list)
         }
-        emit(list)
+    }
+
+    private suspend fun refresh() {
+        refreshSignal.emit(Unit)
     }
 
     override suspend fun getForRecipe(recipeId: Long): List<AdditionalVariableCost> =
@@ -47,7 +60,7 @@ class AdditionalVariableCostRepositoryImpl(
                 unitCost = cost.unitCost,
                 note = cost.note
             )
-            queries.lastInsertId().executeAsOne()
+            queries.lastInsertId().executeAsOne().also { refresh() }
         }
 
     override suspend fun update(cost: AdditionalVariableCost): Unit =
@@ -58,12 +71,14 @@ class AdditionalVariableCostRepositoryImpl(
                 note = cost.note,
                 id = cost.id
             )
+            refresh()
             Unit
         }
 
     override suspend fun delete(id: Long): Unit =
         withContext(Dispatchers.IO) {
             queries.delete(id)
+            refresh()
             Unit
         }
 }

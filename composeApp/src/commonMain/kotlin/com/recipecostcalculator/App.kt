@@ -26,11 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.recipecostcalculator.ui.strings.es.Navigation
+import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.screens.additionalvariablecosts.AdditionalVariableCostsScreen
 import com.recipecostcalculator.ui.screens.configuration.ConfigurationScreen
 import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
 import com.recipecostcalculator.ui.screens.fixedcosts.FixedCostsScreen
@@ -47,9 +49,11 @@ fun App(
     recipesViewModel: RecipesViewModel,
     ingredientsViewModel: IngredientsViewModel,
     fixedCostsViewModel: FixedCostsViewModel,
+    additionalCostsViewModel: AdditionalVariableCostsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     var showFixedCosts by remember { mutableStateOf(false) }
+    var showAdditionalCosts by remember { mutableStateOf(false) }
     var showConfiguration by remember { mutableStateOf(false) }
     var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
     val pagerState = rememberPagerState(pageCount = { TAB_COUNT })
@@ -74,10 +78,9 @@ fun App(
         TabItem(Navigation.ingredients, Icons.Filled.Inventory2) { IngredientsScreen(ingredientsViewModel) },
         TabItem(Navigation.more, Icons.Filled.MoreVert) {
             MoreScreen(
-                fixedCostsViewModel = fixedCostsViewModel,
-                settingsViewModel = settingsViewModel,
                 onNavigateToFixedCosts = { showFixedCosts = true },
-                onNavigateToConfiguration = { showConfiguration = true }
+                onNavigateToConfiguration = { showConfiguration = true },
+                onNavigateToAdditionalCosts = { showAdditionalCosts = true }
             )
         }
     )
@@ -108,6 +111,10 @@ fun App(
                 showFixedCosts -> FixedCostsScreen(
                     viewModel = fixedCostsViewModel,
                     onBack = { showFixedCosts = false }
+                )
+                showAdditionalCosts -> AdditionalVariableCostsScreen(
+                    viewModel = additionalCostsViewModel,
+                    onBack = { showAdditionalCosts = false }
                 )
                 showConfiguration -> ConfigurationScreen(
                     settingsViewModel = settingsViewModel,
