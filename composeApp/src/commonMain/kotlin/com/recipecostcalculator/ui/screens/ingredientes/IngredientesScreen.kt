@@ -43,14 +43,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
-import com.recipecostcalculator.presentation.viewmodel.IngredientesViewModel
+import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
 
 private val purchaseUnits = listOf("kg", "lt", "un")
 private val usageUnits = listOf("kg", "g", "lt", "cc", "un")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngredientesScreen(viewModel: IngredientesViewModel) {
+fun IngredientesScreen(viewModel: IngredientsViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }

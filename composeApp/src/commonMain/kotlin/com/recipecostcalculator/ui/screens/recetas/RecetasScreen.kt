@@ -24,11 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Recipe
-import com.recipecostcalculator.presentation.viewmodel.RecetasViewModel
+import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 
 @Composable
 fun RecetasScreen(
-    viewModel: RecetasViewModel,
+    viewModel: RecipesViewModel,
     onRecipeClick: (Long) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

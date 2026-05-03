@@ -14,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.presentation.viewmodel.CostosFijosViewModel
+import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
 
 @Composable
 fun MasScreen(
-    costosFijosViewModel: CostosFijosViewModel,
+    costosFijosViewModel: FixedCostsViewModel,
     settingsViewModel: SettingsViewModel,
     onNavigateToCostosFijos: () -> Unit,
     onNavigateToConfiguracion: () -> Unit

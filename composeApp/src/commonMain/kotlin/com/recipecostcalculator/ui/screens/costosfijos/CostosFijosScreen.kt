@@ -42,12 +42,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.FixedCost
-import com.recipecostcalculator.presentation.viewmodel.CostosFijosViewModel
+import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CostosFijosScreen(
-    viewModel: CostosFijosViewModel,
+    viewModel: FixedCostsViewModel,
     onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

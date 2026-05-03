@@ -14,10 +14,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.presentation.viewmodel.CostosFijosViewModel
 import com.recipecostcalculator.presentation.viewmodel.DashboardViewModel
-import com.recipecostcalculator.presentation.viewmodel.IngredientesViewModel
-import com.recipecostcalculator.presentation.viewmodel.RecetasViewModel
+import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
+import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
 import com.recipecostcalculator.ui.screens.configuracion.ConfiguracionScreen
 import com.recipecostcalculator.ui.screens.costosfijos.CostosFijosScreen
@@ -30,9 +30,9 @@ import com.recipecostcalculator.ui.screens.recetas.RecetasScreen
 @Composable
 fun App(
     dashboardViewModel: DashboardViewModel,
-    recetasViewModel: RecetasViewModel,
-    ingredientesViewModel: IngredientesViewModel,
-    costosFijosViewModel: CostosFijosViewModel,
+    recetasViewModel: RecipesViewModel,
+    ingredientesViewModel: IngredientsViewModel,
+    costosFijosViewModel: FixedCostsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -108,7 +108,7 @@ data class TabItem(
 @Composable
 private fun RecetaDetailScreenWrapper(
     recipeId: Long?,
-    recetasViewModel: RecetasViewModel,
+    recetasViewModel: RecipesViewModel,
     onBack: () -> Unit
 ) {
     RecetaDetailScreen(
