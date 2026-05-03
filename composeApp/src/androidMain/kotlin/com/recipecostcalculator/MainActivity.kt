@@ -24,9 +24,9 @@ class MainActivity : ComponentActivity() {
         }
 
         val dashboardViewModel: com.recipecostcalculator.presentation.viewmodel.DashboardViewModel by inject()
-        val recetasViewModel: com.recipecostcalculator.presentation.viewmodel.RecetasViewModel by inject()
-        val ingredientesViewModel: com.recipecostcalculator.presentation.viewmodel.IngredientesViewModel by inject()
-        val costosFijosViewModel: com.recipecostcalculator.presentation.viewmodel.CostosFijosViewModel by inject()
+        val recetasViewModel: com.recipecostcalculator.presentation.viewmodel.RecipesViewModel by inject()
+        val ingredientesViewModel: com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel by inject()
+        val costosFijosViewModel: com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel by inject()
         val settingsViewModel: com.recipecostcalculator.presentation.viewmodel.SettingsViewModel by inject()
         val seeder: com.recipecostcalculator.data.local.DatabaseSeeder by inject()
 

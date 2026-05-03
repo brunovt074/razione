@@ -43,7 +43,7 @@ import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
-import com.recipecostcalculator.presentation.viewmodel.RecetasViewModel
+import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -51,7 +51,7 @@ import org.koin.compose.koinInject
 @Composable
 fun RecetaDetailScreen(
     recipeId: Long?,
-    viewModel: RecetasViewModel,
+    viewModel: RecipesViewModel,
     onBack: () -> Unit
 ) {
     val recipeRepository: RecipeRepository = koinInject()

@@ -16,10 +16,10 @@ import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
-import com.recipecostcalculator.presentation.viewmodel.CostosFijosViewModel
 import com.recipecostcalculator.presentation.viewmodel.DashboardViewModel
-import com.recipecostcalculator.presentation.viewmodel.IngredientesViewModel
-import com.recipecostcalculator.presentation.viewmodel.RecetasViewModel
+import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
+import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -54,9 +54,9 @@ val androidAppModule = module {
 
     single<DatabaseSeeder> { DatabaseSeeder(get(), get(), get(), get()) }
 
-    viewModel<IngredientesViewModel> { IngredientesViewModel(ingredientRepository = get()) }
-    viewModel<RecetasViewModel> { RecetasViewModel(recipeRepository = get(), calculateRecipeCostUseCase = get()) }
-    viewModel<CostosFijosViewModel> { CostosFijosViewModel(fixedCostRepository = get()) }
+    viewModel<IngredientsViewModel> { IngredientsViewModel(ingredientRepository = get()) }
+    viewModel<RecipesViewModel> { RecipesViewModel(recipeRepository = get(), calculateRecipeCostUseCase = get()) }
+    viewModel<FixedCostsViewModel> { FixedCostsViewModel(fixedCostRepository = get()) }
     viewModel<DashboardViewModel> {
         DashboardViewModel(
             recipeRepository = get(),
