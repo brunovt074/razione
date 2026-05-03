@@ -1,12 +1,12 @@
 package com.recipecostcalculator.ui
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.recipecostcalculator.ui.theme.AppTheme
 
 @Composable
 fun App() {
-    MaterialTheme {
-        Text("Recipe Cost Calculator - Mobile First")
+    AppTheme {
+        Text("Recipe Cost Calculator - MVP")
     }
 }
