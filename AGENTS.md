@@ -23,14 +23,14 @@ Skipping this protocol produces inconsistent code and failed reviews.
 
 | Field | Value |
 |-------|-------|
-| Name | Recipe Cost Calculator Desktop |
+| Name | Recipe Cost Calculator |
 | Language | Kotlin 2.2.21 |
-| Platform | Kotlin Multiplatform (JVM target for MVP) |
-| Architecture | Clean Architecture / DDD |
-| Database | SQLite (JDBC for MVP), migrations required |
-| UI | Compose Multiplatform 1.9.1 |
-| DI | Koin (planned baseline for presentation wiring) |
-| Money | java.math.BigDecimal (JVM-only) |
+| Platform | Kotlin Multiplatform (Android-first, desktop planned) |
+| Architecture | Clean Architecture / DDD / MVI |
+| Database | SQLite (Room for mobile, JDBC for desktop) |
+| UI | Jetpack Compose 1.9.1 |
+| DI | Hilt (mobile-first) |
+| Money | java.math.BigDecimal |
 | Date/Time | kotlinx-datetime |
 
 ### Component Layout
@@ -121,6 +121,12 @@ master
   <- feature/initial-config
       <- feature/agentic-arch
           <- feature/starting-implementation-business-mvp
+
+Mobile-first chain (new paradigm):
+
+master
+  <- feature/agentic-arch
+      <- feature/mobile-first-architecture
 ```
 
 Branch chaining is allowed and preferred over direct merge to `master`.
@@ -185,7 +191,8 @@ Skills provide specialized context for each concern area and are mandatory.
 | `qa-code` | `skills/qa-code/SKILL.md` | shared, composeApp |
 | `qa-ux-ui` | `skills/qa-ux-ui/SKILL.md` | composeApp |
 | `skill-creator` | `skills/skill-creator/SKILL.md` | skills |
-| `skill-sync` | `skills/skill-sync/SKILL.md` | root | <!-- skill-sync:skill-sync -->
+| `skill-sync` | `skills/skill-sync/SKILL.md` | root |
+| `mobile-compose` | `skills/mobile-compose/SKILL.md` | composeApp (mobile) | <!-- skill-sync:skill-sync -->
 
 ### Auto-invoke Rules
 
@@ -205,6 +212,8 @@ When performing any of these actions, read the skill FIRST:
 | Creating fake repositories or test factories | `testing` |
 | Creating Compose screens or components | `compose-frontend` |
 | Creating or modifying ViewModels | `compose-frontend` |
+| Kotlin/Android mobile development with Jetpack Compose | `mobile-compose` |
+| Mobile-first architecture, adaptive layouts, WindowSizeClass | `mobile-compose` |
 | Designing user flows or UI copy in Spanish | `ux-ui-design` |
 | Running code quality audits or refactors | `qa-code` |
 | Creating a new skill | `skill-creator` then `skill-sync` |

@@ -11,3 +11,4 @@
 | `qa-ux-ui` | UX/UI validation patterns for Compose Desktop screens and flows | `../skills/qa-ux-ui/SKILL.md` | <!-- skill-sync:qa-ux-ui -->
 | `qa-code` | Code quality and architecture compliance checks for Kotlin implementation | `../skills/qa-code/SKILL.md` | <!-- skill-sync:qa-code -->
 | `compose-frontend` | Compose Desktop screen architecture, ViewModel boundaries, and navigation patterns | `../skills/compose-frontend/SKILL.md` | <!-- skill-sync:compose-frontend -->
+| `mobile-compose` | > | `../skills/mobile-compose/SKILL.md` | <!-- skill-sync:mobile-compose -->
