@@ -68,6 +68,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation("io.insert-koin:koin-android:4.2.0")
+            implementation(libs.sqldelight.driver.android)
             implementation(libs.lifecycle.runtime.ktx)
         }
     }
