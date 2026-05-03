@@ -30,6 +30,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material)
             implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(compose.runtime)
             implementation(compose.ui)
             implementation(projects.shared)

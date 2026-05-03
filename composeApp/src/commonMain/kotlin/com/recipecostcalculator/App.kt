@@ -5,6 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -16,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.recipecostcalculator.ui.strings.es.Navigation
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
@@ -48,8 +56,8 @@ fun App(
     val coroutineScope = rememberCoroutineScope()
 
     val tabs = listOf(
-        TabItem(Navigation.home, "H") { DashboardScreen(dashboardViewModel) },
-        TabItem(Navigation.recipes, "R") {
+        TabItem(Navigation.home, Icons.Filled.Home) { DashboardScreen(dashboardViewModel) },
+        TabItem(Navigation.recipes, Icons.Filled.Fastfood) {
             if (selectedRecipeId != null) {
                 RecipeDetailScreenWrapper(
                     recipeId = selectedRecipeId,
@@ -63,8 +71,8 @@ fun App(
                 )
             }
         },
-        TabItem(Navigation.ingredients, "I") { IngredientsScreen(ingredientsViewModel) },
-        TabItem(Navigation.more, "M") {
+        TabItem(Navigation.ingredients, Icons.Filled.Inventory2) { IngredientsScreen(ingredientsViewModel) },
+        TabItem(Navigation.more, Icons.Filled.MoreVert) {
             MoreScreen(
                 fixedCostsViewModel = fixedCostsViewModel,
                 settingsViewModel = settingsViewModel,
@@ -79,7 +87,7 @@ fun App(
             NavigationBar {
                 tabs.forEachIndexed { index, tab ->
                     NavigationBarItem(
-                        icon = { Text(tab.icon) },
+                        icon = { Icon(tab.icon, contentDescription = tab.title) },
                         label = { Text(tab.title) },
                         selected = pagerState.currentPage == index,
                         onClick = {
@@ -118,7 +126,7 @@ fun App(
 
 data class TabItem(
     val title: String,
-    val icon: String,
+    val icon: ImageVector,
     val content: @Composable () -> Unit
 )
 
