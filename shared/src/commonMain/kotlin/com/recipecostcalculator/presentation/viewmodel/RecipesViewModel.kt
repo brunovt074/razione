@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RecetasViewModel(
+class RecipesViewModel(
     private val recipeRepository: RecipeRepository,
     private val calculateRecipeCostUseCase: CalculateRecipeCostUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(RecetasState())
-    val state: StateFlow<RecetasState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(RecipesState())
+    val state: StateFlow<RecipesState> = _state.asStateFlow()
 
     init {
         loadRecipes()
@@ -63,7 +63,7 @@ class RecetasViewModel(
     }
 }
 
-data class RecetasState(
+data class RecipesState(
     val recipes: List<Recipe> = emptyList(),
     val costBreakdowns: Map<Long, CostBreakdown?> = emptyMap(),
     val isLoading: Boolean = true,

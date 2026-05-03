@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CostosFijosViewModel(
+class FixedCostsViewModel(
     private val fixedCostRepository: FixedCostRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(CostosFijosState())
-    val state: StateFlow<CostosFijosState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(FixedCostsState())
+    val state: StateFlow<FixedCostsState> = _state.asStateFlow()
 
     init {
         loadCosts()
@@ -48,7 +48,7 @@ class CostosFijosViewModel(
     }
 }
 
-data class CostosFijosState(
+data class FixedCostsState(
     val costs: List<FixedCost> = emptyList(),
     val totalMonthly: Double = 0.0,
     val isLoading: Boolean = true,

@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class IngredientesViewModel(
+class IngredientsViewModel(
     private val ingredientRepository: IngredientRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(IngredientesState())
-    val state: StateFlow<IngredientesState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(IngredientsState())
+    val state: StateFlow<IngredientsState> = _state.asStateFlow()
 
     init {
         loadIngredients()
@@ -58,7 +58,7 @@ class IngredientesViewModel(
     }
 }
 
-data class IngredientesState(
+data class IngredientsState(
     val ingredients: List<Ingredient> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,

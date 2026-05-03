@@ -93,6 +93,47 @@ After creating or modifying any skill, sync to all `AGENTS.md` files:
 - Domain layer NEVER imports infrastructure or UI
 - UI text in Spanish; code, package names, and tests in English
 - No wildcard imports except when explicitly allowed in a skill
+- Class names in English (PascalCase) - no Spanish like "RecetasViewModel"
+- File names in English - no Spanish like "CostosFijosScreen.kt"
+- Package/directory names in English - no Spanish like "configuracion/"
+- UI text extracted to i18n system using lang/es/ folder
+- i18n keys MUST be in English (PascalCase) - no Spanish like "val titulo" or "val guardar"
+- All code identifiers (class names, function names, property names, variable names) must be in English
+
+---
+
+## Internationalization (i18n)
+
+UI strings must be externalized by domain for maintainability and future translation support.
+
+**IMPORTANT**: i18n keys MUST be in English (PascalCase) to ensure scalability. The Spanish text is the VALUE, not the key.
+
+Structure:
+
+```
+composeApp/src/commonMain/kotlin/com/recipecostcalculator/ui/strings/
+├── es/
+│   ├── common.kt        # save, cancel, delete, add
+│   ├── navigation.kt    # home, recipes, ingredients, more
+│   ├── recipes.kt       # title, newRecipe, ownIngredients
+│   ├── ingredients.kt   # title, newIngredient, purchasePrice
+│   ├── fixedcosts.kt    # title, concept, monthlyAmount
+│   └── configuration.kt # title, production, batchSize
+└── en/                  # English (future)
+```
+
+Usage pattern (Spanish default):
+
+```kotlin
+import com.recipecostcalculator.ui.strings.es.Common
+import com.recipecostcalculator.ui.strings.es.Navigation
+import com.recipecostcalculator.ui.strings.es.Recipes
+
+// Keys in English, values in Spanish
+Text(Common.save)       // Shows: "Guardar"
+Text(Navigation.home)    // Shows: "Inicio"
+Text(Recipes.newRecipe) // Shows: "Nueva Receta"
+```
 
 ---
 
@@ -227,6 +268,7 @@ When performing any of these actions, read the skill FIRST:
 | Kotlin/Android mobile development with Jetpack Compose | `mobile-compose` |
 | Mobile-first architecture, adaptive layouts, WindowSizeClass | `mobile-compose` |
 | Designing user flows or UI copy in Spanish | `ux-ui-design` |
+| Creating i18n string files | `ux-ui-design` |
 | Running code quality audits or refactors | `qa-code` |
 | Creating a new skill | `skill-creator` then `skill-sync` |
 | After modifying any skill metadata | `skill-sync` |
