@@ -1,8 +1,25 @@
-# Recipe Cost Calculator Desktop - Project Status
+# Recipe Cost Calculator - Project Status
 
 ## Vision
 
-Desktop application to calculate recipe costs with composable sub-recipes, full ingredient breakdown, and local SQLite persistence.
+Mobile-first Kotlin Multiplatform app for recipe cost calculation with Android as primary target, iOS and Desktop future-ready.
+
+---
+
+## Technology Stack
+
+| Component | Version |
+|-----------|---------|
+| Kotlin | 2.2.21 |
+| Compose Multiplatform | 1.9.1 |
+| SQLDelight | 2.1.0 |
+| Koin | 4.2.0 |
+| Voyager | 1.1.0-beta02 |
+| Lifecycle | 2.10.0 |
+| AGP | 8.7.3 |
+| compileSdk | 36 |
+| minSdk | 26 |
+| targetSdk | 35 |
 
 ---
 
@@ -20,69 +37,63 @@ Desktop application to calculate recipe costs with composable sub-recipes, full 
 
 ## Branch Chain Strategy
 
-Current mandatory chain:
+Current chain:
 
 ```
 master
-  <- feature/initial-config
-      <- feature/agentic-arch
-          <- feature/starting-implementation-business-mvp
+  <- feature/agentic-arch
+      <- feature/mobile-first-architecture (current)
 ```
 
 ### Branch Intent
 
 - `master`: minimal baseline commit
-- `feature/initial-config`: clean Compose/Gradle bootstrap
 - `feature/agentic-arch`: AGENTS + skills + governance layer
-- `feature/starting-implementation-business-mvp`: business implementation aligned to the new agentic architecture
+- `feature/mobile-first-architecture`: KMP mobile-first foundation with Android target
 
 ---
 
 ## Current State
 
-### Step 0: Repository Baseline [DONE]
-**Branch**: `master`
+### Mobile-First Foundation [COMPLETE]
+**Branch**: `feature/mobile-first-architecture`
 
-- Empty baseline commit created
+**Completed**:
+- Domain layer: 7 entities (Ingredient, Recipe, RecipeIngredient, AdditionalVariableCost, FixedCost, AppSettings, CostBreakdown)
+- 5 repository interfaces with implementations
+- CalculateRecipeCostUseCase with recursive recipe costing
+- SQLDelight schema with 6 tables
+- 4 ViewModels (Ingredientes, Recetas, CostosFijos, Dashboard)
+- DatabaseSeeder with initial data (6 ingredients, Muzzarela recipe, default settings)
+- Koin DI setup with Android driver
+- Basic App.kt with Material3 theme
 
-### Step 1: Initial Compose/Gradle Configuration [DONE]
-**Branch**: `feature/initial-config`
-
-- Root Gradle settings and version catalog configured
-- Gradle wrapper added
-- `composeApp` and `shared` modules bootstrapped
-- Compile validation for desktop target completed
-
-### Step 2: Agentic Architecture Foundation [IN PROGRESS]
-**Branch**: `feature/agentic-arch`
-
-- AGENTS governance being adapted from ERP reference
-- Skills tree and synchronization workflow to be finalized
-- Domain-specific architecture decisions and rules to be codified
-
-### Step 3: Starting Business Implementation [PENDING]
-**Branch**: `feature/starting-implementation-business-mvp`
-
-- Migrate previous implementation into modular architecture
-- Apply skill rules strictly (architecture, sqlite-jdbc, testing, compose)
-- Add compliance audit against AGENTS + skills
-
----
-
-## Immediate Next Actions
-
-1. Finalize skills in `skills/` and sync AGENTS files
-2. Create branch `feature/starting-implementation-business-mvp` from `feature/agentic-arch`
-3. Move business code into module-per-domain structure under `shared/`
-4. Add tests and run full validation command
-5. Execute architecture audit and document findings
+### In Progress
+- Navigation with Voyager TabNavigator
+- UI screens (Dashboard, Ingredientes, Recetas, CostosFijos)
 
 ---
 
 ## Validation Commands
 
 ```bash
-./gradlew :shared:jvmTest --no-daemon
-./gradlew :composeApp:compileKotlinJvm --no-daemon
-./gradlew :shared:jvmTest :composeApp:compileKotlinJvm --no-daemon
+# Run Android unit tests
+./gradlew :shared:testDebugUnitTest --no-daemon
+
+# Compile Android app
+./gradlew :composeApp:compileDebugKotlin --no-daemon
+
+# Full validation
+./gradlew :shared:testDebugUnitTest :composeApp:compileDebugKotlin --no-daemon
 ```
+
+---
+
+## Next Actions
+
+1. Create AppNavigation with Voyager TabNavigator
+2. Implement DashboardScreen with KPIs
+3. Implement IngredientesScreen
+4. Implement RecetasScreen with inheritance
+5. Implement CostosFijosScreen
+6. Write unit tests for use cases and repositories
