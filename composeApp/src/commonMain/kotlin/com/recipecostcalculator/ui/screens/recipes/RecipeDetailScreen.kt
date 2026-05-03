@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -19,17 +20,20 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,8 +51,10 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.strings.es.Recipes
 import com.recipecostcalculator.ui.strings.es.Common
+import com.recipecostcalculator.ui.strings.es.Ingredients
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -60,10 +66,13 @@ fun RecipeDetailScreen(
     onBack: () -> Unit
 ) {
     val recipeRepository: RecipeRepository = koinInject()
+    val ingredientsViewModel: IngredientsViewModel = koinInject()
     val scope = rememberCoroutineScope()
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val ingredientsState by ingredientsViewModel.state.collectAsStateWithLifecycle()
     val allRecipes = state.recipes
+    val availableIngredients = ingredientsState.ingredients
 
     var existingRecipe by remember { mutableStateOf<Recipe?>(null) }
     var name by remember { mutableStateOf("") }
@@ -77,6 +86,7 @@ fun RecipeDetailScreen(
     var inheritedIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) }
 
     var ingredientToDelete by remember { mutableStateOf<RecipeIngredient?>(null) }
+    var showIngredientSelector by remember { mutableStateOf(false) }
 
     LaunchedEffect(recipeId) {
         if (recipeId != null && recipeId != 0L) {
@@ -190,7 +200,7 @@ fun RecipeDetailScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentRecipeExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                     )
                     ExposedDropdownMenu(
                         expanded = parentRecipeExpanded,
@@ -253,11 +263,20 @@ fun RecipeDetailScreen(
 
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = Recipes.ownIngredientsHint,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = Recipes.ownIngredientsHint,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            TextButton(onClick = { showIngredientSelector = true }) {
+                                Text(Common.addButton)
+                            }
+                        }
 
                         if (ownIngredients.isEmpty()) {
                             Text(
@@ -331,6 +350,122 @@ fun RecipeDetailScreen(
                 }
             }
         )
+    }
+
+    if (showIngredientSelector) {
+        IngredientSelectorBottomSheet(
+            availableIngredients = availableIngredients,
+            onIngredientSelected = { ingredient: Ingredient, usageAmount: Double? ->
+                val recipeIdValue = recipeId ?: 0L
+                val usageValue = usageAmount ?: 0.0
+                ownIngredients = ownIngredients + RecipeIngredient(
+                    recipeId = recipeIdValue,
+                    ingredientId = ingredient.id,
+                    usagePerPizza = usageValue,
+                    yieldPizzas = 1L
+                )
+                showIngredientSelector = false
+            },
+            onDismiss = { showIngredientSelector = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun IngredientSelectorBottomSheet(
+    availableIngredients: List<Ingredient>,
+    onIngredientSelected: (Ingredient, Double?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) }
+    var usageAmount by remember { mutableStateOf("") }
+    var ingredientExpanded by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = Recipes.addIngredient,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = ingredientExpanded,
+                onExpandedChange = { ingredientExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedIngredient?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(Ingredients.name) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ingredientExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                )
+                ExposedDropdownMenu(
+                    expanded = ingredientExpanded,
+                    onDismissRequest = { ingredientExpanded = false }
+                ) {
+                    availableIngredients.forEach { ingredient ->
+                        DropdownMenuItem(
+                            text = { Text(ingredient.name) },
+                            onClick = {
+                                selectedIngredient = ingredient
+                                ingredientExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            selectedIngredient?.let { ingredient ->
+                OutlinedTextField(
+                    value = usageAmount,
+                    onValueChange = { usageAmount = it },
+                    label = { Text("${Ingredients.quantity} (${ingredient.usageUnit})") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(Common.cancel)
+                }
+                Button(
+                    onClick = {
+                        selectedIngredient?.let { ingredient ->
+                            val amount = usageAmount.toDoubleOrNull()
+                            if (amount != null && amount > 0) {
+                                onIngredientSelected(ingredient, amount)
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = selectedIngredient != null && usageAmount.toDoubleOrNull() != null
+                ) {
+                    Text(Common.add)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
