@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.recetas
+package com.recipecostcalculator.ui.screens.recipes
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -27,7 +27,7 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
 
 @Composable
-fun RecetasScreen(
+fun RecipesScreen(
     viewModel: RecipesViewModel,
     onRecipeClick: (Long) -> Unit
 ) {

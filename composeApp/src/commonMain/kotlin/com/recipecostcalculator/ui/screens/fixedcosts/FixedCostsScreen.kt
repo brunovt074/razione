@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.costosfijos
+package com.recipecostcalculator.ui.screens.fixedcosts
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -43,10 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.ui.strings.es.Common
+import com.recipecostcalculator.ui.strings.es.FixedCosts
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CostosFijosScreen(
+fun FixedCostsScreen(
     viewModel: FixedCostsViewModel,
     onBack: () -> Unit
 ) {
@@ -59,7 +61,7 @@ fun CostosFijosScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Costos Fijos") },
+                title = { Text(FixedCosts.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Text("←")
@@ -69,7 +71,7 @@ fun CostosFijosScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { editingCost = null; showBottomSheet = true }) {
-                Text("+")
+                Text(Common.add)
             }
         }
     ) { paddingValues ->
@@ -113,7 +115,7 @@ fun CostosFijosScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Total Mensual",
+                            text = FixedCosts.totalMonthly,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -149,19 +151,19 @@ fun CostosFijosScreen(
     costToDelete?.let { cost ->
         AlertDialog(
             onDismissRequest = { costToDelete = null },
-            title = { Text("Eliminar costo") },
-            text = { Text("¿Eliminar \"${cost.concept}\"?") },
+            title = { Text(FixedCosts.deleteCost) },
+            text = { Text(FixedCosts.deleteCostConfirmation.format(cost.concept)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.onDelete(cost.id)
                     costToDelete = null
                 }) {
-                    Text("Eliminar")
+                    Text(Common.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { costToDelete = null }) {
-                    Text("Cancelar")
+                    Text(Common.cancel)
                 }
             }
         )
@@ -222,7 +224,7 @@ private fun FixedCostForm(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = if (cost == null) "Nuevo Costo Fijo" else "Editar Costo Fijo",
+            text = if (cost == null) FixedCosts.newFixedCost else FixedCosts.editFixedCost,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -230,21 +232,21 @@ private fun FixedCostForm(
         OutlinedTextField(
             value = concept,
             onValueChange = { concept = it.take(50); conceptError = false },
-            label = { Text("Concepto") },
+            label = { Text(FixedCosts.concept) },
             modifier = Modifier.fillMaxWidth(),
             isError = conceptError,
-            supportingText = if (conceptError) {{ Text("Requerido") }} else null
+            supportingText = if (conceptError) {{ Text(Common.required) }} else null
         )
 
         OutlinedTextField(
             value = amount,
             onValueChange = { amount = it; amountError = false },
-            label = { Text("Monto mensual") },
+            label = { Text(FixedCosts.monthlyAmount) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             prefix = { Text("$") },
             isError = amountError,
-            supportingText = if (amountError) {{ Text("Requerido") }} else null
+            supportingText = if (amountError) {{ Text(Common.required) }} else null
         )
 
         Row(
@@ -255,7 +257,7 @@ private fun FixedCostForm(
                 onClick = onCancel,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Cancelar")
+                Text(Common.cancel)
             }
             Button(
                 onClick = {
@@ -272,7 +274,7 @@ private fun FixedCostForm(
                 },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Guardar")
+                Text(Common.save)
             }
         }
 

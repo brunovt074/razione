@@ -1,4 +1,4 @@
-package com.recipecostcalculator.ui.screens.ingredientes
+package com.recipecostcalculator.ui.screens.ingredients
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -44,13 +44,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
+import com.recipecostcalculator.ui.strings.es.Common
+import com.recipecostcalculator.ui.strings.es.Ingredients
 
 private val purchaseUnits = listOf("kg", "lt", "un")
 private val usageUnits = listOf("kg", "g", "lt", "cc", "un")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngredientesScreen(viewModel: IngredientsViewModel) {
+fun IngredientsScreen(viewModel: IngredientsViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
@@ -61,7 +63,7 @@ fun IngredientesScreen(viewModel: IngredientsViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { editingIngredient = null; showBottomSheet = true }) {
-                Text("+")
+                Text(Common.add)
             }
         }
     ) { paddingValues ->
@@ -73,7 +75,7 @@ fun IngredientesScreen(viewModel: IngredientsViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Ingredientes",
+                text = Ingredients.title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -87,7 +89,7 @@ fun IngredientesScreen(viewModel: IngredientsViewModel) {
                 }
             } else if (state.ingredients.isEmpty()) {
                 Text(
-                    text = "No hay ingredientes. Toca + para agregar.",
+                    text = Ingredients.noIngredients,
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
