@@ -1,5 +1,6 @@
 package com.recipecostcalculator.ui.screens.recipes
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -264,7 +266,9 @@ fun RecipeDetailScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showIngredientSelector = true },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -273,17 +277,27 @@ fun RecipeDetailScreen(
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            TextButton(onClick = { showIngredientSelector = true }) {
-                                Text(Common.addButton)
-                            }
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = Common.add,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
 
                         if (ownIngredients.isEmpty()) {
-                            Text(
-                                text = Recipes.noIngredientsHint,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showIngredientSelector = true }
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = Recipes.noIngredientsHint,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         } else {
                             ownIngredients.forEach { ri ->
                                 Row(
