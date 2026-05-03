@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.recipecostcalculator.presentation.viewmodel.FixedCostsViewModel
-import com.recipecostcalculator.presentation.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
 
 @Composable
 fun MoreScreen(

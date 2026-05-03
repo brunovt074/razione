@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Recipe
-import com.recipecostcalculator.presentation.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 
 @Composable
 fun RecipesScreen(

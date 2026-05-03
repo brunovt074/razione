@@ -43,7 +43,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
-import com.recipecostcalculator.presentation.viewmodel.IngredientsViewModel
+import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.Ingredients
 

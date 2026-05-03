@@ -1,4 +1,4 @@
-package com.recipecostcalculator.presentation.viewmodel
+package com.recipecostcalculator.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

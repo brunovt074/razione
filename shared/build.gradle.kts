@@ -29,10 +29,6 @@ kotlin {
             // Serialization
             implementation(libs.kotlinx.serialization.json)
 
-            // Lifecycle (for ViewModel)
-            implementation(libs.lifecycle.viewmodel)
-            implementation(libs.lifecycle.runtime.ktx)
-
             // Koin
             implementation(libs.koin.core)
         }

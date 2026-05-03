@@ -1,9 +1,8 @@
-package com.recipecostcalculator.presentation.viewmodel
+package com.recipecostcalculator.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.recipecostcalculator.domain.model.CostBreakdown
-import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.repository.FixedCostRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
