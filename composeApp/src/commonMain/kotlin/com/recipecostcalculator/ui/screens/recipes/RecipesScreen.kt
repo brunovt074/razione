@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.strings.es.Recipes
+import com.recipecostcalculator.ui.strings.es.Common
 
 @Composable
 fun RecipesScreen(
@@ -36,7 +38,7 @@ fun RecipesScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { onRecipeClick(0) }) {
-                Text("+")
+                Text(Common.addButton)
             }
         }
     ) { paddingValues ->
@@ -48,7 +50,7 @@ fun RecipesScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Recetas",
+                text = Recipes.title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -62,7 +64,7 @@ fun RecipesScreen(
                 }
             } else if (state.recipes.isEmpty()) {
                 Text(
-                    text = "No hay recetas. Toca + para crear una.",
+                    text = Common.noRecipes,
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
@@ -106,18 +108,18 @@ private fun RecipeCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = if (recipe.parentRecipeId != null) "Hereda de otra receta" else "Receta base",
+                text = if (recipe.parentRecipeId != null) Recipes.inheritsFromAnother else Recipes.baseRecipe,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "${recipe.recipeIngredients.size} ingredientes",
+                text = "${recipe.recipeIngredients.size} ${Recipes.ingredientCount}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             cost?.let {
                 Text(
-                    text = "Costo: $${String.format("%.2f", it.totalCostPerUnit)}",
+                    text = "${Recipes.cost} $${String.format("%.2f", it.totalCostPerUnit)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary

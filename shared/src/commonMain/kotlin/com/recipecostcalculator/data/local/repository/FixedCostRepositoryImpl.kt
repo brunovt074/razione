@@ -5,6 +5,8 @@ import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.domain.repository.FixedCostRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 class FixedCostRepositoryImpl(
@@ -12,16 +14,27 @@ class FixedCostRepositoryImpl(
 ) : FixedCostRepository {
 
     private val queries = db.fixedCostsQueries
+    private val refreshSignal = MutableSharedFlow<Unit>(replay = 1)
 
-    override fun observeAll(): Flow<List<FixedCost>> = kotlinx.coroutines.flow.flow {
-        val list = queries.selectAll().executeAsList().map { row ->
-            FixedCost(
-                id = row.id,
-                concept = row.concept,
-                monthlyAmount = row.monthly_amount
-            )
+    init {
+        refreshSignal.tryEmit(Unit)
+    }
+
+    override fun observeAll(): Flow<List<FixedCost>> = refreshSignal.flatMapLatest {
+        kotlinx.coroutines.flow.flow {
+            val list = queries.selectAll().executeAsList().map { row ->
+                FixedCost(
+                    id = row.id,
+                    concept = row.concept,
+                    monthlyAmount = row.monthly_amount
+                )
+            }
+            emit(list)
         }
-        emit(list)
+    }
+
+    private suspend fun refresh() {
+        refreshSignal.emit(Unit)
     }
 
     override suspend fun getTotalMonthly(): Double =
@@ -35,7 +48,7 @@ class FixedCostRepositoryImpl(
                 concept = cost.concept,
                 monthlyAmount = cost.monthlyAmount
             )
-            queries.lastInsertId().executeAsOne()
+            queries.lastInsertId().executeAsOne().also { refresh() }
         }
 
     override suspend fun update(cost: FixedCost): Unit =
@@ -45,12 +58,14 @@ class FixedCostRepositoryImpl(
                 monthlyAmount = cost.monthlyAmount,
                 id = cost.id
             )
+            refresh()
             Unit
         }
 
     override suspend fun delete(id: Long): Unit =
         withContext(Dispatchers.IO) {
             queries.delete(id)
+            refresh()
             Unit
         }
 }

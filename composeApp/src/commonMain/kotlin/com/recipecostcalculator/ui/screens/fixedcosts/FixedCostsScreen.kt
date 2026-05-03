@@ -57,7 +57,7 @@ fun FixedCostsScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingCost by remember { mutableStateOf<FixedCost?>(null) }
     var costToDelete by remember { mutableStateOf<FixedCost?>(null) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         topBar = {
