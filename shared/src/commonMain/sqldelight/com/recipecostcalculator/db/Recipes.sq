@@ -1,0 +1,33 @@
+CREATE TABLE recipes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    parent_recipe_id INTEGER REFERENCES recipes(id),
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM recipes ORDER BY name ASC;
+
+selectById:
+SELECT * FROM recipes WHERE id = :id;
+
+selectBaseRecipes:
+SELECT * FROM recipes WHERE parent_recipe_id IS NULL ORDER BY name ASC;
+
+selectByParent:
+SELECT * FROM recipes WHERE parent_recipe_id = :parentId ORDER BY name ASC;
+
+insert:
+INSERT INTO recipes(name, parent_recipe_id, created_at, updated_at)
+VALUES (:name, :parentRecipeId, :createdAt, :updatedAt);
+
+update:
+UPDATE recipes SET name = :name, parent_recipe_id = :parentRecipeId, updated_at = :updatedAt
+WHERE id = :id;
+
+delete:
+DELETE FROM recipes WHERE id = :id;
+
+lastInsertId:
+SELECT last_insert_rowid();

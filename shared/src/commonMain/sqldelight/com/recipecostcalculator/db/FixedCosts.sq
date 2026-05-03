@@ -1,0 +1,23 @@
+CREATE TABLE fixed_costs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    concept TEXT NOT NULL,
+    monthly_amount REAL NOT NULL DEFAULT 0.0
+);
+
+selectAll:
+SELECT * FROM fixed_costs ORDER BY concept ASC;
+
+totalMonthly:
+SELECT COALESCE(SUM(monthly_amount), 0.0) FROM fixed_costs;
+
+insert:
+INSERT INTO fixed_costs(concept, monthly_amount) VALUES (:concept, :monthlyAmount);
+
+update:
+UPDATE fixed_costs SET concept = :concept, monthly_amount = :monthlyAmount WHERE id = :id;
+
+delete:
+DELETE FROM fixed_costs WHERE id = :id;
+
+lastInsertId:
+SELECT last_insert_rowid();

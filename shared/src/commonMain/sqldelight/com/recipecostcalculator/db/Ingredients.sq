@@ -1,0 +1,37 @@
+CREATE TABLE ingredients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    purchase_unit TEXT NOT NULL,
+    purchase_price REAL NOT NULL,
+    content_amount REAL NOT NULL,
+    usage_unit TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_ingredients_active ON ingredients(is_active);
+
+selectAll:
+SELECT * FROM ingredients WHERE is_active = 1 ORDER BY name ASC;
+
+selectById:
+SELECT * FROM ingredients WHERE id = :id;
+
+insert:
+INSERT INTO ingredients(name, purchase_unit, purchase_price, content_amount, usage_unit, is_active, updated_at)
+VALUES (:name, :purchaseUnit, :purchasePrice, :contentAmount, :usageUnit, 1, :updatedAt);
+
+updatePrice:
+UPDATE ingredients SET purchase_price = :price, updated_at = :updatedAt WHERE id = :id;
+
+updateAll:
+UPDATE ingredients
+SET name = :name, purchase_unit = :purchaseUnit, purchase_price = :purchasePrice,
+    content_amount = :contentAmount, usage_unit = :usageUnit, updated_at = :updatedAt
+WHERE id = :id;
+
+softDelete:
+UPDATE ingredients SET is_active = 0 WHERE id = :id;
+
+lastInsertId:
+SELECT last_insert_rowid();

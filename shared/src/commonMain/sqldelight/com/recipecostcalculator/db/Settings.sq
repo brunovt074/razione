@@ -1,0 +1,19 @@
+CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+INSERT OR IGNORE INTO settings(key, value) VALUES ('batch_size', '6');
+INSERT OR IGNORE INTO settings(key, value) VALUES ('waste_factor', '0.0');
+INSERT OR IGNORE INTO settings(key, value) VALUES ('discount_pct', '0.0');
+INSERT OR IGNORE INTO settings(key, value) VALUES ('est_monthly_prod', '0');
+INSERT OR IGNORE INTO settings(key, value) VALUES ('target_margin', '0.5');
+
+selectAll:
+SELECT * FROM settings;
+
+selectByKey:
+SELECT value FROM settings WHERE key = :key;
+
+upsert:
+INSERT OR REPLACE INTO settings(key, value) VALUES (:key, :value);

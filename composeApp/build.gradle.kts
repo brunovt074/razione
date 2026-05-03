@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
-    alias(libs.plugins.androidApplication)
+    id("com.android.application")
 }
 
 kotlin {
@@ -33,11 +33,10 @@ kotlin {
             implementation(compose.ui)
             implementation(projects.shared)
 
-            // Koin
-            implementation(platform(libs.koin.bom))
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
+            // Koin - using explicit versions to avoid deprecated platform()
+            implementation("io.insert-koin:koin-core:4.2.0")
+            implementation("io.insert-koin:koin-compose:4.2.0")
+            implementation("io.insert-koin:koin-compose-viewmodel:4.2.0")
 
             // Lifecycle
             implementation(libs.lifecycle.viewmodel.compose)
@@ -68,7 +67,7 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(libs.koin.android)
+            implementation("io.insert-koin:koin-android:4.2.0")
             implementation(libs.lifecycle.runtime.ktx)
         }
     }
