@@ -1,0 +1,29 @@
+CREATE TABLE recipe_ingredients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredients(id),
+    usage_per_pizza REAL,
+    yield_pizzas INTEGER,
+    UNIQUE(recipe_id, ingredient_id),
+    CHECK (
+        (usage_per_pizza IS NOT NULL AND yield_pizzas IS NULL) OR
+        (usage_per_pizza IS NULL AND yield_pizzas IS NOT NULL)
+    )
+);
+
+selectByRecipe:
+SELECT ri.*, i.name AS ingredient_name, i.purchase_unit, i.purchase_price,
+       i.content_amount, i.usage_unit
+FROM recipe_ingredients ri
+JOIN ingredients i ON ri.ingredient_id = i.id
+WHERE ri.recipe_id = :recipeId;
+
+insertOrReplace:
+INSERT OR REPLACE INTO recipe_ingredients(recipe_id, ingredient_id, usage_per_pizza, yield_pizzas)
+VALUES (:recipeId, :ingredientId, :usagePerPizza, :yieldPizzas);
+
+deleteByRecipe:
+DELETE FROM recipe_ingredients WHERE recipe_id = :recipeId;
+
+deleteOne:
+DELETE FROM recipe_ingredients WHERE recipe_id = :recipeId AND ingredient_id = :ingredientId;

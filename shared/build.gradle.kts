@@ -7,16 +7,9 @@ plugins {
 kotlin {
     jvm()
 
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
             // SQLDelight
-            implementation(platform(libs.koin.bom))
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
 

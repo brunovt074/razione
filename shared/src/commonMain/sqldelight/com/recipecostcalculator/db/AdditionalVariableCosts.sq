@@ -1,0 +1,30 @@
+CREATE TABLE additional_variable_costs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    concept TEXT NOT NULL,
+    unit_cost REAL NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
+);
+
+selectAll:
+SELECT * FROM additional_variable_costs ORDER BY recipe_id ASC, concept ASC;
+
+selectGlobal:
+SELECT * FROM additional_variable_costs WHERE recipe_id IS NULL;
+
+selectByRecipe:
+SELECT * FROM additional_variable_costs WHERE recipe_id = :recipeId OR recipe_id IS NULL;
+
+insert:
+INSERT INTO additional_variable_costs(recipe_id, concept, unit_cost, note)
+VALUES (:recipeId, :concept, :unitCost, :note);
+
+update:
+UPDATE additional_variable_costs SET concept = :concept, unit_cost = :unitCost, note = :note
+WHERE id = :id;
+
+delete:
+DELETE FROM additional_variable_costs WHERE id = :id;
+
+lastInsertId:
+SELECT last_insert_rowid();
