@@ -1,0 +1,352 @@
+package com.recipecostcalculator
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.verticalScroll
+import com.recipecostcalculator.costing.application.usecase.CalculateRecipeCostQuery
+import com.recipecostcalculator.costing.application.usecase.CalculateRecipeCostUseCase
+import com.recipecostcalculator.costing.domain.service.CostCalculatorService
+import com.recipecostcalculator.costing.domain.service.CostResult
+import com.recipecostcalculator.financial.domain.model.Money
+import com.recipecostcalculator.fixedcost.application.usecase.AddFixedCostItemCommand
+import com.recipecostcalculator.fixedcost.application.usecase.AddFixedCostItemUseCase
+import com.recipecostcalculator.fixedcost.application.usecase.CalculateFixedCostSummaryUseCase
+import com.recipecostcalculator.fixedcost.application.usecase.GetFixedCostItemsUseCase
+import com.recipecostcalculator.fixedcost.application.usecase.GetProductionConfigurationUseCase
+import com.recipecostcalculator.fixedcost.application.usecase.SetProductionPerMonthCommand
+import com.recipecostcalculator.fixedcost.application.usecase.SetProductionPerMonthUseCase
+import com.recipecostcalculator.infrastructure.persistence.sqlite.SQLiteDatabase
+import com.recipecostcalculator.ingredient.application.usecase.CreateIngredientCommand
+import com.recipecostcalculator.ingredient.application.usecase.CreateIngredientUseCase
+import com.recipecostcalculator.ingredient.application.usecase.GetAllIngredientsUseCase
+import com.recipecostcalculator.ingredient.application.usecase.UpdateIngredientCostCommand
+import com.recipecostcalculator.ingredient.application.usecase.UpdateIngredientCostUseCase
+import com.recipecostcalculator.ingredient.domain.repository.IngredientRepository
+import com.recipecostcalculator.pricing.application.usecase.AddPriceListProductUseCase
+import com.recipecostcalculator.pricing.application.usecase.AddPriceListProductCommand
+import com.recipecostcalculator.pricing.application.usecase.BuildPriceListRowsUseCase
+import com.recipecostcalculator.pricing.application.usecase.CalculatePricingSummaryUseCase
+import com.recipecostcalculator.pricing.application.usecase.GetPriceListCostBasisUseCase
+import com.recipecostcalculator.pricing.application.usecase.GetPriceListProductsUseCase
+import com.recipecostcalculator.pricing.application.usecase.GetPricingConfigurationUseCase
+import com.recipecostcalculator.pricing.application.usecase.SavePricingConfigurationCommand
+import com.recipecostcalculator.pricing.application.usecase.SavePricingConfigurationUseCase
+import com.recipecostcalculator.pricing.application.usecase.SetPriceListCostBasisUseCase
+import com.recipecostcalculator.recipe.application.usecase.AddComponentToRecipeCommand
+import com.recipecostcalculator.recipe.application.usecase.AddComponentToRecipeUseCase
+import com.recipecostcalculator.recipe.application.usecase.CreateRecipeCommand
+import com.recipecostcalculator.recipe.application.usecase.CreateRecipeUseCase
+import com.recipecostcalculator.recipe.application.usecase.GetAllRecipesUseCase
+import com.recipecostcalculator.recipe.domain.repository.RecipeRepository
+import com.recipecostcalculator.ui.screens.dashboard.DashboardPresenter
+import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
+import com.recipecostcalculator.ui.screens.fixedcost.FixedCostPresenter
+import com.recipecostcalculator.ui.screens.fixedcost.FixedCostScreen
+import com.recipecostcalculator.ui.screens.ingredients.IngredientPresenter
+import com.recipecostcalculator.ui.screens.ingredients.IngredientScreen
+import com.recipecostcalculator.ui.screens.pricelist.PriceListPresenter
+import com.recipecostcalculator.ui.screens.pricelist.PriceListScreen
+import com.recipecostcalculator.ui.screens.pricing.PricingPresenter
+import com.recipecostcalculator.ui.screens.pricing.PricingScreen
+import com.recipecostcalculator.ui.screens.recipes.RecipePresenter
+import com.recipecostcalculator.ui.screens.recipes.RecipeScreen
+import java.math.BigDecimal
+
+@Composable
+fun RecipeCostApp(databasePath: String = "recipe-cost.db") {
+    val database = remember(databasePath) { SQLiteDatabase(databasePath) }
+    val ingredientRepository: IngredientRepository = remember { database.ingredientRepository() }
+    val recipeRepository: RecipeRepository = remember { database.recipeRepository() }
+    val fixedCostRepository = remember { database.fixedCostRepository() }
+    val pricingRepository = remember { database.pricingRepository() }
+
+    val costCalculatorService = remember {
+        CostCalculatorService(
+            ingredientRepository = ingredientRepository,
+            recipeRepository = recipeRepository,
+        )
+    }
+
+    val createIngredientUseCase = remember { CreateIngredientUseCase(ingredientRepository) }
+    val updateIngredientCostUseCase = remember { UpdateIngredientCostUseCase(ingredientRepository) }
+    val getAllIngredientsUseCase = remember { GetAllIngredientsUseCase(ingredientRepository) }
+    val createRecipeUseCase = remember { CreateRecipeUseCase(recipeRepository) }
+    val addComponentToRecipeUseCase = remember { AddComponentToRecipeUseCase(recipeRepository) }
+    val getAllRecipesUseCase = remember { GetAllRecipesUseCase(recipeRepository) }
+    val calculateRecipeCostUseCase = remember {
+        CalculateRecipeCostUseCase(
+            recipeRepository = recipeRepository,
+            costCalculatorService = costCalculatorService,
+        )
+    }
+
+    val addFixedCostItemUseCase = remember { AddFixedCostItemUseCase(fixedCostRepository) }
+    val getFixedCostItemsUseCase = remember { GetFixedCostItemsUseCase(fixedCostRepository) }
+    val setProductionPerMonthUseCase = remember { SetProductionPerMonthUseCase(fixedCostRepository) }
+    val getProductionConfigurationUseCase = remember { GetProductionConfigurationUseCase(fixedCostRepository) }
+    val calculateFixedCostSummaryUseCase = remember { CalculateFixedCostSummaryUseCase(fixedCostRepository) }
+
+    val savePricingConfigurationUseCase = remember { SavePricingConfigurationUseCase(pricingRepository) }
+    val getPricingConfigurationUseCase = remember { GetPricingConfigurationUseCase(pricingRepository) }
+    val addPriceListProductUseCase = remember { AddPriceListProductUseCase(pricingRepository) }
+    val getPriceListProductsUseCase = remember { GetPriceListProductsUseCase(pricingRepository) }
+    val setPriceListCostBasisUseCase = remember { SetPriceListCostBasisUseCase(pricingRepository) }
+    val getPriceListCostBasisUseCase = remember { GetPriceListCostBasisUseCase(pricingRepository) }
+    val calculatePricingSummaryUseCase = remember {
+        CalculatePricingSummaryUseCase(
+            calculateRecipeCostUseCase = calculateRecipeCostUseCase,
+            calculateFixedCostSummaryUseCase = calculateFixedCostSummaryUseCase,
+            pricingRepository = pricingRepository,
+        )
+    }
+    val buildPriceListRowsUseCase = remember { BuildPriceListRowsUseCase(pricingRepository) }
+
+    val createIngredient = remember {
+        { command: CreateIngredientCommand ->
+            createIngredientUseCase.execute(command)
+            Unit
+        }
+    }
+    val updateIngredientCost = remember {
+        { command: UpdateIngredientCostCommand ->
+            updateIngredientCostUseCase.execute(command)
+            Unit
+        }
+    }
+    val createRecipe = remember {
+        { command: CreateRecipeCommand ->
+            createRecipeUseCase.execute(command)
+            Unit
+        }
+    }
+    val addComponentToRecipe = remember {
+        { command: AddComponentToRecipeCommand ->
+            addComponentToRecipeUseCase.execute(command)
+            Unit
+        }
+    }
+    val calculateRecipeCost = remember {
+        { query: CalculateRecipeCostQuery ->
+            calculateRecipeCostUseCase.execute(query)
+        }
+    }
+
+    val addFixedCostItem = remember {
+        { name: String, amount: BigDecimal ->
+            addFixedCostItemUseCase.execute(
+                AddFixedCostItemCommand(
+                    name = name,
+                    monthlyAmount = Money.of(amount),
+                ),
+            )
+            Unit
+        }
+    }
+    val updateProductionPerMonth = remember {
+        { value: BigDecimal ->
+            setProductionPerMonthUseCase.execute(SetProductionPerMonthCommand(pizzasPerMonth = value))
+            Unit
+        }
+    }
+    val savePricingConfiguration = remember {
+        { sellingPrice: BigDecimal, commissionPercent: BigDecimal, wastePercent: BigDecimal, targetMarginPercent: BigDecimal ->
+            savePricingConfigurationUseCase.execute(
+                SavePricingConfigurationCommand(
+                    sellingPricePerPizza = Money.of(sellingPrice),
+                    commissionPercent = commissionPercent,
+                    wastePercent = wastePercent,
+                    targetMarginPercent = targetMarginPercent,
+                ),
+            )
+            Unit
+        }
+    }
+    val addPriceListProduct = remember {
+        { name: String, sellingPrice: BigDecimal, notes: String ->
+            addPriceListProductUseCase.execute(
+                AddPriceListProductCommand(
+                    name = name,
+                    sellingPrice = Money.of(sellingPrice),
+                    notes = notes,
+                ),
+            )
+            Unit
+        }
+    }
+
+    val ingredientPresenter = remember {
+        IngredientPresenter(
+            getAllIngredients = getAllIngredientsUseCase,
+            createIngredient = createIngredient,
+            updateIngredientCost = updateIngredientCost,
+        )
+    }
+
+    val recipePresenter = remember {
+        RecipePresenter(
+            getAllIngredients = getAllIngredientsUseCase,
+            getAllRecipes = getAllRecipesUseCase,
+            createRecipe = createRecipe,
+            addComponentToRecipe = addComponentToRecipe,
+        )
+    }
+
+    val fixedCostPresenter = remember {
+        FixedCostPresenter(
+            getFixedCostItemsUseCase = getFixedCostItemsUseCase,
+            getProductionConfigurationUseCase = getProductionConfigurationUseCase,
+            calculateFixedCostSummaryUseCase = calculateFixedCostSummaryUseCase,
+            addFixedCostItem = addFixedCostItem,
+            updateProductionPerMonth = updateProductionPerMonth,
+        )
+    }
+
+    val pricingPresenter = remember {
+        PricingPresenter(
+            getAllRecipes = getAllRecipesUseCase,
+            getPricingConfigurationUseCase = getPricingConfigurationUseCase,
+            calculatePricingSummaryUseCase = calculatePricingSummaryUseCase,
+            savePricingConfiguration = savePricingConfiguration,
+        )
+    }
+
+    val priceListPresenter = remember {
+        PriceListPresenter(
+            getPriceListProductsUseCase = getPriceListProductsUseCase,
+            getPriceListCostBasisUseCase = getPriceListCostBasisUseCase,
+            setPriceListCostBasisUseCase = setPriceListCostBasisUseCase,
+            buildPriceListRowsUseCase = buildPriceListRowsUseCase,
+            addPriceListProduct = addPriceListProduct,
+            calculatePricingSummaryUseCase = calculatePricingSummaryUseCase,
+            getAllRecipes = getAllRecipesUseCase,
+        )
+    }
+
+    val dashboardPresenter = remember {
+        DashboardPresenter(
+            getAllRecipes = getAllRecipesUseCase,
+            calculateRecipeCost = calculateRecipeCost,
+            calculateFixedCostSummaryUseCase = calculateFixedCostSummaryUseCase,
+            getPricingConfigurationUseCase = getPricingConfigurationUseCase,
+            calculatePricingSummaryUseCase = calculatePricingSummaryUseCase,
+        )
+    }
+
+    AppContent(
+        dashboardPresenter = dashboardPresenter,
+        ingredientPresenter = ingredientPresenter,
+        recipePresenter = recipePresenter,
+        fixedCostPresenter = fixedCostPresenter,
+        pricingPresenter = pricingPresenter,
+        priceListPresenter = priceListPresenter,
+    )
+}
+
+@Composable
+private fun AppContent(
+    dashboardPresenter: DashboardPresenter,
+    ingredientPresenter: IngredientPresenter,
+    recipePresenter: RecipePresenter,
+    fixedCostPresenter: FixedCostPresenter,
+    pricingPresenter: PricingPresenter,
+    priceListPresenter: PriceListPresenter,
+) {
+    var selectedScreen by remember { mutableStateOf(AppScreen.DASHBOARD) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        NavigationBar(
+            selectedScreen = selectedScreen,
+            onSelectScreen = { selectedScreen = it },
+        )
+
+        when (selectedScreen) {
+            AppScreen.DASHBOARD -> DashboardScreen(
+                presenter = dashboardPresenter,
+                onNavigate = { selectedScreen = it },
+            )
+
+            AppScreen.COSTOS_POR_PIZZA -> PricingScreen(
+                presenter = pricingPresenter,
+            )
+
+            AppScreen.NUEVA_RECETA -> RecipeScreen(
+                presenter = recipePresenter,
+                title = "Nueva receta",
+                onlyCreateRecipe = false,
+            )
+
+            AppScreen.INGREDIENTES -> IngredientScreen(
+                presenter = ingredientPresenter,
+            )
+
+            AppScreen.GASTOS_FIJOS -> FixedCostScreen(
+                presenter = fixedCostPresenter,
+            )
+
+            AppScreen.LISTA_PRECIOS -> PriceListScreen(
+                presenter = priceListPresenter,
+            )
+
+        }
+    }
+}
+
+@Composable
+private fun NavigationBar(
+    selectedScreen: AppScreen,
+    onSelectScreen: (AppScreen) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(scrollState),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        val navigationScreens = listOf(
+            AppScreen.DASHBOARD,
+            AppScreen.COSTOS_POR_PIZZA,
+            AppScreen.NUEVA_RECETA,
+            AppScreen.INGREDIENTS,
+            AppScreen.GASTOS_FIJOS,
+            AppScreen.LISTA_PRECIOS,
+        )
+
+        navigationScreens.forEach { screen ->
+            val label = when (screen) {
+                AppScreen.DASHBOARD -> "Dashboard"
+                AppScreen.COSTOS_POR_PIZZA -> "Costos por pizza"
+                AppScreen.NUEVA_RECETA -> "Nueva receta"
+                AppScreen.INGREDIENTS -> "Ingredientes"
+                AppScreen.RECIPES -> "Recetas"
+                AppScreen.COSTS -> "Costos"
+                AppScreen.GASTOS_FIJOS -> "Gastos fijos"
+                AppScreen.LISTA_PRECIOS -> "Lista de precios"
+            }
+            Button(onClick = { onSelectScreen(screen) }) {
+                Text(if (screen == selectedScreen) "[$label]" else label)
+            }
+        }
+    }
+}

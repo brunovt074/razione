@@ -1,0 +1,38 @@
+"Pizzas Congeladas - Planilla de Costos, Precio y Margen",,,,,,,
+,,,,,,,
+CONTROLES (modificá en amarillo),,,,,,,
+Cantidad de pizzas por lote (para costos por lote),,,,,6,,
+Precio de venta por pizza (si vendés por unidad),,,,,$0,,
+Descuento / comisión (% sobre precio) (ej: 10% por delivery/marketplace),,,,,0.0%,,
+"Merma / desperdicio (%) (para cubrir fallas, sobras, etc.)",,,,,0.0%,,
+,,,,,,,
+"Cómo usar: cargá/actualizá precios y gramajes (celdas amarillas).
+El costo por pizza, margen y precio sugerido se calculan solos con fórmulas.",,,,,,,
+,,,,,,,
+,,,,,,,
+COSTOS VARIABLES - INGREDIENTES (por pizza),,,,,,,
+Ingrediente,Unidad compra,Precio compra ($),Contenido compra,Unidad uso,Uso por pizza,Rinde (pizzas),Costo por pizza ($)
+Harina,Kg,"$18,500",25.00,Kg,0.300,,$222.00
+Mozzarella,Kg,"$9,300",1.00,Kg,0.25,,"$2,325.00"
+Salsa,Lata,$930,1.00,Lata,,6.00,$155.00
+Levadura,g,"$3,800",500.00,g,6.667,6.00,$50.67
+Aceite,cc,"$3,000",900.00,cc,8.333,6.00,$27.78
+Sal,g,$930,500.00,g,4.167,6.00,$7.75
+,,,,,,,
+,,,,,,,
+OTROS COSTOS VARIABLES (por pizza),,,,,,,
+Concepto,Costo unitario ($),Observación,,,,,Costo por pizza ($)
+Bandeja telgopor,$230,1 unidad por pizza,,,,,$230.00
+,,,,,,,
+,,,,,,TOTAL costo variable por pizza,"$3,018.19"
+,,,,,,Costo variable por lote,"$18,109.17"
+,,,,,,,
+,,,,,,,
+"PRECIO, COMISIONES Y MARGEN (por pizza)",,,,,,,
+Precio de venta (input),$0.00,,Objetivo: Margen bruto deseado (%),,50.0%,,
+Comisión / descuento (en $),$0.00,,Precio sugerido para lograr ese margen,,"$6,036.39",,
+Ingreso neto (precio - comisión),$0.00,,Precio sugerido incluyendo comisión/descuento,,"$6,036.39",,
+Costo variable (de arriba),"$3,018.19",,,,,,
+Ganancia bruta ($),"-$3,018.19",,,,,,
+Margen bruto (%) sobre ingreso neto,0.0%,,,,,,
+Markup (%) sobre costo,-100.0%,,,,,,
