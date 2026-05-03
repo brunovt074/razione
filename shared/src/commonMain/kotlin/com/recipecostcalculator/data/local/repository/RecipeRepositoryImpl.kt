@@ -5,7 +5,10 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 class RecipeRepositoryImpl(
@@ -14,19 +17,30 @@ class RecipeRepositoryImpl(
 
     private val queries = db.recipesQueries
     private val recipeIngredientQueries = db.recipeIngredientsQueries
+    private val refreshSignal = MutableSharedFlow<Unit>(replay = 1)
 
-    override fun observeAll(): Flow<List<Recipe>> = kotlinx.coroutines.flow.flow {
-        val list = queries.selectAll().executeAsList().map { row ->
-            Recipe(
-                id = row.id,
-                name = row.name,
-                parentRecipeId = row.parent_recipe_id,
-                recipeIngredients = emptyList(),
-                createdAt = row.created_at,
-                updatedAt = row.updated_at
-            )
+    init {
+        refreshSignal.tryEmit(Unit)
+    }
+
+    override fun observeAll(): Flow<List<Recipe>> = refreshSignal.flatMapLatest {
+        kotlinx.coroutines.flow.flow {
+            val list = queries.selectAll().executeAsList().map { row ->
+                Recipe(
+                    id = row.id,
+                    name = row.name,
+                    parentRecipeId = row.parent_recipe_id,
+                    recipeIngredients = emptyList(),
+                    createdAt = row.created_at,
+                    updatedAt = row.updated_at
+                )
+            }
+            emit(list)
         }
-        emit(list)
+    }
+
+    private suspend fun refresh() {
+        refreshSignal.emit(Unit)
     }
 
     override suspend fun getById(id: Long): Recipe? =
@@ -79,7 +93,7 @@ class RecipeRepositoryImpl(
                 createdAt = recipe.createdAt,
                 updatedAt = recipe.updatedAt
             )
-            queries.lastInsertId().executeAsOne()
+            queries.lastInsertId().executeAsOne().also { refresh() }
         }
 
     override suspend fun update(recipe: Recipe): Unit =
@@ -90,12 +104,14 @@ class RecipeRepositoryImpl(
                 updatedAt = System.currentTimeMillis(),
                 id = recipe.id
             )
+            refresh()
             Unit
         }
 
     override suspend fun delete(id: Long): Unit =
         withContext(Dispatchers.IO) {
             queries.delete(id)
+            refresh()
             Unit
         }
 
@@ -110,6 +126,7 @@ class RecipeRepositoryImpl(
                     yieldPizzas = ri.yieldPizzas
                 )
             }
+            refresh()
             Unit
         }
 

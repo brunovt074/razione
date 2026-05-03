@@ -5,6 +5,9 @@ import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 class IngredientRepositoryImpl(
@@ -12,21 +15,32 @@ class IngredientRepositoryImpl(
 ) : IngredientRepository {
 
     private val queries = db.ingredientsQueries
+    private val refreshSignal = MutableSharedFlow<Unit>(replay = 1)
 
-    override fun observeAll(): Flow<List<Ingredient>> = kotlinx.coroutines.flow.flow {
-        val list = queries.selectAll().executeAsList().map { row ->
-            Ingredient(
-                id = row.id,
-                name = row.name,
-                purchaseUnit = row.purchase_unit,
-                purchasePrice = row.purchase_price,
-                contentAmount = row.content_amount,
-                usageUnit = row.usage_unit,
-                isActive = row.is_active == 1L,
-                updatedAt = row.updated_at
-            )
+    init {
+        refreshSignal.tryEmit(Unit)
+    }
+
+    override fun observeAll(): Flow<List<Ingredient>> = refreshSignal.flatMapLatest {
+        kotlinx.coroutines.flow.flow {
+            val list = queries.selectAll().executeAsList().map { row ->
+                Ingredient(
+                    id = row.id,
+                    name = row.name,
+                    purchaseUnit = row.purchase_unit,
+                    purchasePrice = row.purchase_price,
+                    contentAmount = row.content_amount,
+                    usageUnit = row.usage_unit,
+                    isActive = row.is_active == 1L,
+                    updatedAt = row.updated_at
+                )
+            }
+            emit(list)
         }
-        emit(list)
+    }
+
+    private suspend fun refresh() {
+        refreshSignal.emit(Unit)
     }
 
     override suspend fun getById(id: Long): Ingredient? =
@@ -55,7 +69,7 @@ class IngredientRepositoryImpl(
                 usageUnit = ingredient.usageUnit,
                 updatedAt = ingredient.updatedAt
             )
-            queries.lastInsertId().executeAsOne()
+            queries.lastInsertId().executeAsOne().also { refresh() }
         }
 
     override suspend fun update(ingredient: Ingredient): Unit =
@@ -69,6 +83,7 @@ class IngredientRepositoryImpl(
                 updatedAt = System.currentTimeMillis(),
                 id = ingredient.id
             )
+            refresh()
             Unit
         }
 
@@ -79,12 +94,14 @@ class IngredientRepositoryImpl(
                 updatedAt = System.currentTimeMillis(),
                 id = id
             )
+            refresh()
             Unit
         }
 
     override suspend fun delete(id: Long): Unit =
         withContext(Dispatchers.IO) {
             queries.softDelete(id)
+            refresh()
             Unit
         }
 }

@@ -44,6 +44,8 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
+import com.recipecostcalculator.ui.strings.es.Recipes
+import com.recipecostcalculator.ui.strings.es.Common
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -139,10 +141,10 @@ fun RecipeDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (recipeId == null || recipeId == 0L) "Nueva Receta" else "Editar Receta") },
+                title = { Text(if (recipeId == null || recipeId == 0L) Recipes.newRecipe else Recipes.editRecipe) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←")
+                        Text(Common.back)
                     }
                 }
             )
@@ -169,7 +171,7 @@ fun RecipeDetailScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre de la receta") },
+                    label = { Text(Recipes.recipeName) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -178,10 +180,10 @@ fun RecipeDetailScreen(
                     onExpandedChange = { parentRecipeExpanded = it }
                 ) {
                     OutlinedTextField(
-                        value = allRecipes.find { it.id == parentRecipeId }?.name ?: "Ninguna (receta base)",
+                        value = allRecipes.find { it.id == parentRecipeId }?.name ?: Recipes.noParentRecipe,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Receta padre (herencia)") },
+                        label = { Text(Recipes.parentRecipe) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentRecipeExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -192,7 +194,7 @@ fun RecipeDetailScreen(
                         onDismissRequest = { parentRecipeExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Ninguna (receta base)") },
+                            text = { Text(Recipes.noParentRecipe) },
                             onClick = { parentRecipeId = null; parentRecipeExpanded = false }
                         )
                         allRecipes.filter { it.id != (recipeId ?: 0) }.forEach { recipe ->
@@ -206,7 +208,7 @@ fun RecipeDetailScreen(
 
                 if (isValidating) {
                     Text(
-                        text = "Validando ciclos...",
+                        text = Common.validatingCycles,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -214,7 +216,7 @@ fun RecipeDetailScreen(
 
                 if (cycleError) {
                     Text(
-                        text = "Error: Esta selección crearía un ciclo de herencia",
+                        text = Common.cycleError,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -231,7 +233,7 @@ fun RecipeDetailScreen(
                             modifier = Modifier.padding(12.dp)
                         ) {
                             Text(
-                                text = "Ingredientes heredados (solo lectura)",
+                                text = Recipes.inheritedIngredients,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -249,14 +251,14 @@ fun RecipeDetailScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "Ingredientes propios (swipe para eliminar)",
+                            text = Recipes.ownIngredientsHint,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold
                         )
 
                         if (ownIngredients.isEmpty()) {
                             Text(
-                                text = "Sin ingredientes - toca + para agregar",
+                                text = Recipes.noIngredientsHint,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -273,7 +275,7 @@ fun RecipeDetailScreen(
                                     )
                                     IconButton(onClick = { ingredientToDelete = ri }) {
                                         Text(
-                                            text = "X",
+                                            text = Common.remove,
                                             color = MaterialTheme.colorScheme.error
                                         )
                                     }
@@ -293,14 +295,14 @@ fun RecipeDetailScreen(
                         onClick = onBack,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                        Text(Common.cancel)
                     }
                     Button(
                         onClick = { validateAndSave() },
                         modifier = Modifier.weight(1f),
                         enabled = name.isNotBlank() && !isValidating
                     ) {
-                        Text("Guardar")
+                        Text(Common.save)
                     }
                 }
             }
@@ -310,19 +312,19 @@ fun RecipeDetailScreen(
     ingredientToDelete?.let { ri ->
         AlertDialog(
             onDismissRequest = { ingredientToDelete = null },
-            title = { Text("Eliminar ingrediente") },
-            text = { Text("¿Eliminar este ingrediente de la receta?") },
+            title = { Text(Recipes.deleteIngredient) },
+            text = { Text(Recipes.deleteIngredientFromRecipe) },
             confirmButton = {
                 TextButton(onClick = {
                     ownIngredients = ownIngredients.filter { it.id != ri.id }
                     ingredientToDelete = null
                 }) {
-                    Text("Eliminar")
+                    Text(Common.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { ingredientToDelete = null }) {
-                    Text("Cancelar")
+                    Text(Common.cancel)
                 }
             }
         )

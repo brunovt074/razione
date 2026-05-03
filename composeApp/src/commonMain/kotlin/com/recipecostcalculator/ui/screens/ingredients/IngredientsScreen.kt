@@ -58,7 +58,7 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var priceDialogIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var deleteDialogIngredient by remember { mutableStateOf<Ingredient?>(null) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         floatingActionButton = {
@@ -140,19 +140,19 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
     deleteDialogIngredient?.let { ingredient ->
         AlertDialog(
             onDismissRequest = { deleteDialogIngredient = null },
-            title = { Text("Eliminar ingrediente") },
-            text = { Text("¿Eliminar \"${ingredient.name}\"?") },
+            title = { Text(Ingredients.deleteIngredient) },
+            text = { Text(Ingredients.deleteIngredientConfirmation.format(ingredient.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.onDelete(ingredient.id)
                     deleteDialogIngredient = null
                 }) {
-                    Text("Eliminar")
+                    Text(Common.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteDialogIngredient = null }) {
-                    Text("Cancelar")
+                    Text(Common.cancel)
                 }
             }
         )
@@ -217,16 +217,16 @@ private fun PriceUpdateDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Actualizar precio") },
+        title = { Text(Ingredients.updatePrice) },
         text = {
             OutlinedTextField(
                 value = priceText,
                 onValueChange = { priceText = it; error = false },
-                label = { Text("Precio") },
+                label = { Text(Ingredients.price) },
                 prefix = { Text("$") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 isError = error,
-                supportingText = if (error) {{ Text("Ingrese un número válido") }} else null
+                supportingText = if (error) {{ Text(Ingredients.enterValidNumber) }} else null
             )
         },
         confirmButton = {
@@ -238,12 +238,12 @@ private fun PriceUpdateDialog(
                     error = true
                 }
             }) {
-                Text("Aceptar")
+                Text(Common.accept)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(Common.cancel)
             }
         }
     )
@@ -275,7 +275,7 @@ private fun IngredientForm(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = if (ingredient == null) "Nuevo Ingrediente" else "Editar Ingrediente",
+            text = if (ingredient == null) Ingredients.newIngredient else Ingredients.editIngredient,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -283,10 +283,10 @@ private fun IngredientForm(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it.take(50); nameError = false },
-            label = { Text("Nombre") },
+            label = { Text(Ingredients.name) },
             modifier = Modifier.fillMaxWidth(),
             isError = nameError,
-            supportingText = if (nameError) {{ Text("Requerido") }} else null
+            supportingText = if (nameError) {{ Text(Common.required) }} else null
         )
 
         ExposedDropdownMenuBox(
@@ -297,7 +297,7 @@ private fun IngredientForm(
                 value = purchaseUnit,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Unidad de compra") },
+                label = { Text(Ingredients.purchaseUnit) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = purchaseUnitExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -319,22 +319,22 @@ private fun IngredientForm(
         OutlinedTextField(
             value = purchasePrice,
             onValueChange = { purchasePrice = it; purchasePriceError = false },
-            label = { Text("Precio de compra") },
+            label = { Text(Ingredients.purchasePrice) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             prefix = { Text("$") },
             isError = purchasePriceError,
-            supportingText = if (purchasePriceError) {{ Text("Requerido") }} else null
+            supportingText = if (purchasePriceError) {{ Text(Common.required) }} else null
         )
 
         OutlinedTextField(
             value = contentAmount,
             onValueChange = { contentAmount = it; contentAmountError = false },
-            label = { Text("Cantidad") },
+            label = { Text(Ingredients.quantity) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = contentAmountError,
-            supportingText = if (contentAmountError) {{ Text("Requerido") }} else null
+            supportingText = if (contentAmountError) {{ Text(Common.required) }} else null
         )
 
         ExposedDropdownMenuBox(
@@ -345,7 +345,7 @@ private fun IngredientForm(
                 value = usageUnit,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Unidad de uso") },
+                label = { Text(Ingredients.usageUnit) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = usageUnitExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -372,7 +372,7 @@ private fun IngredientForm(
                 onClick = onCancel,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Cancelar")
+                Text(Common.cancel)
             }
             Button(
                 onClick = {
@@ -396,7 +396,7 @@ private fun IngredientForm(
                 },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Guardar")
+                Text(Common.save)
             }
         }
 
