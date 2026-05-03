@@ -63,7 +63,7 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { editingIngredient = null; showBottomSheet = true }) {
-                Text(Common.add)
+                Text("+")
             }
         }
     ) { paddingValues ->
@@ -159,6 +159,7 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
     }
 }
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientCard(

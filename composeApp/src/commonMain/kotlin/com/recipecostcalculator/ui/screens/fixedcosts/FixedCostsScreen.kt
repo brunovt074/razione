@@ -46,6 +46,7 @@ import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.FixedCosts
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FixedCostsScreen(
@@ -71,7 +72,7 @@ fun FixedCostsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { editingCost = null; showBottomSheet = true }) {
-                Text(Common.add)
+                Text("+")
             }
         }
     ) { paddingValues ->
@@ -170,6 +171,7 @@ fun FixedCostsScreen(
     }
 }
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FixedCostCard(
