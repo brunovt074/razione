@@ -22,4 +22,6 @@ object Recipes {
     val cost = "Costo:"
     val noRecipes = "No hay recetas. Toca + para crear una."
     val addIngredient = "Agregar Ingrediente"
+    val deleteRecipe = "Eliminar receta"
+    val deleteRecipeConfirmation = "¿Eliminar la receta \"%s\"? Esta acción no se puede deshacer."
 }
