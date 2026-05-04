@@ -263,41 +263,25 @@ fun RecipeDetailScreen(
                     }
                 }
 
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showIngredientSelector = true }
+            ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showIngredientSelector = true },
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = Recipes.ownIngredientsHint,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = Common.add,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        Text(
+                            text = Recipes.ownIngredientsHint,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
 
                         if (ownIngredients.isEmpty()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showIngredientSelector = true }
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = Recipes.noIngredientsHint,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                            Text(
+                                text = Recipes.noIngredientsHint,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
                         } else {
                             ownIngredients.forEach { ri ->
                                 Row(
