@@ -7,6 +7,7 @@ import com.recipecostcalculator.domain.repository.FixedCostRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
+import com.recipecostcalculator.financial.domain.model.Money
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,8 +36,10 @@ class DashboardViewModel(
                 calculateRecipeCostUseCase(recipe.id).getOrNull()
             }
 
-            val avgVariable = if (costs.isNotEmpty()) costs.sumOf { it.totalVariableCost } / costs.size else 0.0
-            val avgTotal = if (costs.isNotEmpty()) costs.sumOf { it.totalCostPerUnit } / costs.size else 0.0
+            val totalVar = costs.sumOf { it.totalVariableCost.amount.toDouble() }
+            val totalTot = costs.sumOf { it.totalCostPerUnit.amount.toDouble() }
+            val avgVariable = if (costs.isNotEmpty()) Money.of(totalVar / costs.size) else Money.ZERO
+            val avgTotal = if (costs.isNotEmpty()) Money.of(totalTot / costs.size) else Money.ZERO
 
             _state.update {
                 it.copy(
@@ -58,9 +61,9 @@ class DashboardViewModel(
 
 data class DashboardState(
     val recipesWithCosts: List<CostBreakdown> = emptyList(),
-    val totalFixedCosts: Double = 0.0,
+    val totalFixedCosts: Money = Money.ZERO,
     val estimatedProduction: Int = 0,
-    val avgVariableCost: Double = 0.0,
-    val avgTotalCost: Double = 0.0,
+    val avgVariableCost: Money = Money.ZERO,
+    val avgTotalCost: Money = Money.ZERO,
     val isLoading: Boolean = true
 )

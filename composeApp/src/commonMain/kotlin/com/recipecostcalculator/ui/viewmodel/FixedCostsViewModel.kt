@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.domain.repository.FixedCostRepository
+import com.recipecostcalculator.financial.domain.model.Money
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +21,8 @@ class FixedCostsViewModel(
     fun loadCosts() {
         viewModelScope.launch {
             fixedCostRepository.observeAll().collect { list ->
-                val total = list.sumOf { it.monthlyAmount }
-                _state.update { it.copy(costs = list, totalMonthly = total, isLoading = false) }
+                val total = list.sumOf { it.monthlyAmount.amount.toDouble() }
+                _state.update { it.copy(costs = list, totalMonthly = Money.of(total), isLoading = false) }
             }
         }
     }
@@ -46,7 +47,7 @@ class FixedCostsViewModel(
 
 data class FixedCostsState(
     val costs: List<FixedCost> = emptyList(),
-    val totalMonthly: Double = 0.0,
+    val totalMonthly: Money = Money.ZERO,
     val isLoading: Boolean = true,
     val error: String? = null
 )
