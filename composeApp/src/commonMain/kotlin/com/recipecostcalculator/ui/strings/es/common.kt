@@ -15,7 +15,7 @@ object Common {
     val remove = "X"
     val addButton = "+"
     val noRecipes = "No hay recetas. Toca + para crear una."
-    val noIngredients = "Sin ingredientes. Toca + para agregar."
+    val noIngredients = "Sin ingredientes."
     val noFixedCosts = "No hay costos fijos. Toca + para agregar."
     val validatingCycles = "Validando ciclos..."
     val cycleError = "Error: Esta selección crearía un ciclo de herencia"
