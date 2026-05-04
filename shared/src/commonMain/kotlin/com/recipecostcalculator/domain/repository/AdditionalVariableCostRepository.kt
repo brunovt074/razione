@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AdditionalVariableCostRepository {
     fun observeAll(): Flow<List<AdditionalVariableCost>>
+    suspend fun getAll(): List<AdditionalVariableCost>
     suspend fun getForRecipe(recipeId: Long): List<AdditionalVariableCost>
     suspend fun insert(cost: AdditionalVariableCost): Long
     suspend fun update(cost: AdditionalVariableCost)
