@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.repository.IngredientRepository
+import com.recipecostcalculator.financial.domain.model.Money
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +32,7 @@ class IngredientesViewModel(
 
     fun onUpdatePrice(id: Long, newPrice: Double) {
         viewModelScope.launch {
-            runCatching { ingredientRepository.updatePrice(id, newPrice) }
+            runCatching { ingredientRepository.updatePrice(id, Money.of(newPrice), System.currentTimeMillis()) }
                 .onFailure { e -> _state.update { it.copy(error = e.message) } }
         }
     }
