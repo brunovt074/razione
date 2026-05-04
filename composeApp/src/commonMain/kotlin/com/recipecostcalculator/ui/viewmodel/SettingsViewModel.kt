@@ -33,9 +33,9 @@ class SettingsViewModel(
         }
     }
 
-    fun updateDiscountPct(value: Double) {
+    fun updateCommissionPct(value: Double) {
         viewModelScope.launch {
-            settingsRepository.updateSetting(SettingKey.DISCOUNT_PCT, value.toString())
+            settingsRepository.updateSetting(SettingKey.COMMISSION_PCT, value.toString())
         }
     }
 
