@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -16,8 +17,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +39,7 @@ fun RecipesScreen(
     onRecipeClick: (Long) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var deleteDialogRecipe by remember { mutableStateOf<Recipe?>(null) }
 
     Scaffold(
         floatingActionButton = {
@@ -75,11 +81,33 @@ fun RecipesScreen(
                         RecipeCard(
                             recipe = recipe,
                             cost = state.costBreakdowns[recipe.id],
-                            onClick = { onRecipeClick(recipe.id) }
+                            onClick = { onRecipeClick(recipe.id) },
+                            onLongClick = { deleteDialogRecipe = recipe }
                         )
-                    }
+}
+    }
+
+    deleteDialogRecipe?.let { recipe ->
+        AlertDialog(
+            onDismissRequest = { deleteDialogRecipe = null },
+            title = { Text(Recipes.deleteRecipe) },
+            text = { Text(Recipes.deleteRecipeConfirmation.format(recipe.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onDelete(recipe.id)
+                    deleteDialogRecipe = null
+                }) {
+                    Text(Common.delete)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteDialogRecipe = null }) {
+                    Text(Common.cancel)
                 }
             }
+        )
+    }
+}
         }
     }
 }
@@ -89,12 +117,16 @@ fun RecipesScreen(
 private fun RecipeCard(
     recipe: Recipe,
     cost: com.recipecostcalculator.domain.model.CostBreakdown?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
