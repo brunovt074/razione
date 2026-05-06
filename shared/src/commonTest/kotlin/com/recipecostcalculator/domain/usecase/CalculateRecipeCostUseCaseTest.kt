@@ -15,9 +15,9 @@ import com.recipecostcalculator.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.junit.Assert.assertTrue
-import org.junit.Assert.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class CalculateRecipeCostUseCaseTest {
 
@@ -97,6 +97,6 @@ class CalculateRecipeCostUseCaseTest {
 
         val result = useCase(1L)
 
-        assertTrue("Result should be success", result.isSuccess)
+        assertTrue(result.isSuccess)
     }
 }
