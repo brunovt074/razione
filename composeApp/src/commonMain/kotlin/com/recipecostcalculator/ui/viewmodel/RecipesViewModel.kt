@@ -20,11 +20,7 @@ class RecipesViewModel(
     private val _state = MutableStateFlow(RecipesState())
     val state: StateFlow<RecipesState> = _state.asStateFlow()
 
-    init {
-        loadRecipes()
-    }
-
-    private fun loadRecipes() {
+    fun loadRecipes() {
         viewModelScope.launch {
             recipeRepository.observeAll().collect { list ->
                 _state.update { it.copy(recipes = list, isLoading = false) }

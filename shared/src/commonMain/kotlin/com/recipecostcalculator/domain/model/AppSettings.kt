@@ -12,6 +12,6 @@ data class AppSettings(
     val batchSize: Int = 6,
     val wasteFactor: Double = 0.0,
     val discountPct: Double = 0.0,
-    val estimatedMonthlyProduction: Int = 0,
+    val estimatedMonthlyProduction: Int = 500,
     val targetMargin: Double = 0.5
 )

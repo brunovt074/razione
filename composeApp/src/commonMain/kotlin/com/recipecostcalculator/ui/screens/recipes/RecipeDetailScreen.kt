@@ -97,14 +97,26 @@ fun RecipeDetailScreen(
                 existingRecipe = it
                 name = it.name
                 parentRecipeId = it.parentRecipeId
-                ownIngredients = it.recipeIngredients
-
-                it.parentRecipeId?.let { parentId ->
-                    val parentRecipe = recipeRepository.getById(parentId)
-                    inheritedIngredients = parentRecipe?.recipeIngredients?.mapNotNull { ri -> ri.ingredient } ?: emptyList()
-                }
             }
             isLoading = false
+        }
+    }
+
+    LaunchedEffect(existingRecipe, availableIngredients) {
+        existingRecipe?.let { recipe ->
+            ownIngredients = recipeRepository.getIngredients(recipe.id).map { ri ->
+                ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
+            }
+            recipe.parentRecipeId?.let { parentId ->
+                val parentRecipe = recipeRepository.getById(parentId)
+                inheritedIngredients = parentRecipe?.let { pr ->
+                    recipeRepository.getIngredients(pr.id).mapNotNull { ri ->
+                        availableIngredients.find { it.id == ri.ingredientId }
+                    }
+                } ?: emptyList()
+            } ?: run {
+                inheritedIngredients = emptyList()
+            }
         }
     }
 
@@ -360,7 +372,7 @@ fun RecipeDetailScreen(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
                     usagePerPizza = usageValue,
-                    yieldPizzas = 1L
+                    yieldPizzas = null
                 )
                 showIngredientSelector = false
             },

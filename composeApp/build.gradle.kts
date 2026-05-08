@@ -75,6 +75,8 @@ kotlin {
             // SQLDelight for Desktop
             implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
             implementation("app.cash.sqldelight:jdbc-driver:2.1.0")
+            // Coroutines Swing for Main dispatcher on desktop
+            implementation(libs.kotlinx.coroutines.swing)
         }
 
         androidMain.dependencies {

@@ -30,7 +30,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
-                    recipeIngredients = emptyList(),
+                    recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
                 )
@@ -38,6 +38,18 @@ class RecipeRepositoryImpl(
             emit(list)
         }
     }
+
+    private fun loadRecipeIngredients(recipeId: Long): List<RecipeIngredient> =
+        recipeIngredientQueries.selectByRecipe(recipeId).executeAsList().map { row ->
+            RecipeIngredient(
+                id = row.id,
+                recipeId = row.recipe_id,
+                ingredientId = row.ingredient_id,
+                ingredient = null,
+                usagePerPizza = row.usage_per_pizza,
+                yieldPizzas = row.yield_pizzas
+            )
+        }
 
     private suspend fun refresh() {
         refreshSignal.emit(Unit)
@@ -50,7 +62,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
-                    recipeIngredients = emptyList(),
+                    recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
                 )
@@ -64,7 +76,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
-                    recipeIngredients = emptyList(),
+                    recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
                 )
@@ -78,7 +90,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
-                    recipeIngredients = emptyList(),
+                    recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
                 )

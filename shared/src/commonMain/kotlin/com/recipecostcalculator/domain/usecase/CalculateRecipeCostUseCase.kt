@@ -9,6 +9,7 @@ import com.recipecostcalculator.domain.repository.FixedCostRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
+import com.recipecostcalculator.domain.service.UnitConversionService
 
 class CalculateRecipeCostUseCase(
     private val recipeRepository: RecipeRepository,
@@ -84,9 +85,16 @@ class CalculateRecipeCostUseCase(
         ri: RecipeIngredient,
         wasteFactor: Double
     ): Double {
-        val pricePerUsageUnit = ingredient.purchasePrice / ingredient.contentAmount
+        val pricePerPurchaseUnit = ingredient.purchasePrice / ingredient.contentAmount
         val baseCost = when {
-            ri.usagePerPizza != null -> pricePerUsageUnit * ri.usagePerPizza
+            ri.usagePerPizza != null -> {
+                val convertedUsage = UnitConversionService.convert(
+                    ri.usagePerPizza,
+                    ingredient.usageUnit,
+                    ingredient.purchaseUnit
+                )
+                pricePerPurchaseUnit * convertedUsage
+            }
             ri.yieldPizzas != null && ri.yieldPizzas > 0 ->
                 ingredient.purchasePrice / ri.yieldPizzas
             else -> 0.0

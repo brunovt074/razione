@@ -1,18 +1,10 @@
 package com.recipecostcalculator
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
@@ -30,7 +22,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import com.recipecostcalculator.ui.strings.es.Navigation
 import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
@@ -48,7 +39,14 @@ import com.recipecostcalculator.ui.screens.recipes.RecipeDetailScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipesScreen
 import kotlinx.coroutines.launch
 
-private const val ANIMATION_DURATION = 300
+private sealed class MainRoute {
+    data object Tabs : MainRoute()
+    data object FixedCosts : MainRoute()
+    data object AdditionalCosts : MainRoute()
+    data object Configuration : MainRoute()
+}
+
+private const val TAB_COUNT = 4
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,9 +58,7 @@ fun App(
     additionalCostsViewModel: AdditionalVariableCostsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    var showFixedCosts by remember { mutableStateOf(false) }
-    var showAdditionalCosts by remember { mutableStateOf(false) }
-    var showConfiguration by remember { mutableStateOf(false) }
+    var route by remember { mutableStateOf<MainRoute>(MainRoute.Tabs) }
     var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
     val pagerState = rememberPagerState(pageCount = { TAB_COUNT })
     val coroutineScope = rememberCoroutineScope()
@@ -86,99 +82,59 @@ fun App(
         TabItem(Navigation.ingredients, Icons.Filled.Inventory2) { IngredientsScreen(ingredientsViewModel) },
         TabItem(Navigation.more, Icons.Filled.MoreVert) {
             MoreScreen(
-                onNavigateToFixedCosts = { showFixedCosts = true },
-                onNavigateToConfiguration = { showConfiguration = true },
-                onNavigateToAdditionalCosts = { showAdditionalCosts = true }
+                onNavigateToFixedCosts = { route = MainRoute.FixedCosts },
+                onNavigateToConfiguration = { route = MainRoute.Configuration },
+                onNavigateToAdditionalCosts = { route = MainRoute.AdditionalCosts }
             )
         }
     )
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                tabs.forEachIndexed { index, tab ->
-                    NavigationBarItem(
-                        icon = { Icon(tab.icon, contentDescription = tab.title) },
-                        label = { Text(tab.title) },
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
+    when (route) {
+        MainRoute.Tabs -> {
+            Scaffold(
+                bottomBar = {
+                    NavigationBar {
+                        tabs.forEachIndexed { index, tab ->
+                            NavigationBarItem(
+                                icon = { Icon(tab.icon, contentDescription = tab.title) },
+                                label = { Text(tab.title) },
+                                selected = pagerState.currentPage == index,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
                 }
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-            AnimatedVisibility(
-                visible = showFixedCosts,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
-            ) {
-                FixedCostsScreen(
-                    viewModel = fixedCostsViewModel,
-                    onBack = { showFixedCosts = false }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = showAdditionalCosts,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
-            ) {
-                AdditionalVariableCostsScreen(
-                    viewModel = additionalCostsViewModel,
-                    onBack = { showAdditionalCosts = false }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = showConfiguration,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeIn(animationSpec = tween(ANIMATION_DURATION)),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(ANIMATION_DURATION)
-                ) + fadeOut(animationSpec = tween(ANIMATION_DURATION))
-            ) {
-                ConfigurationScreen(
-                    settingsViewModel = settingsViewModel,
-                    onBack = { showConfiguration = false }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = !showFixedCosts && !showAdditionalCosts && !showConfiguration,
-                enter = fadeIn(animationSpec = tween(ANIMATION_DURATION)),
-                exit = fadeOut(animationSpec = tween(ANIMATION_DURATION))
-            ) {
+            ) { innerPadding ->
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier,
+                    modifier = Modifier.padding(innerPadding),
                     beyondViewportPageCount = 1
                 ) { page ->
                     tabs[page].content()
                 }
             }
+        }
+        MainRoute.FixedCosts -> {
+            FixedCostsScreen(
+                viewModel = fixedCostsViewModel,
+                onBack = { route = MainRoute.Tabs }
+            )
+        }
+        MainRoute.AdditionalCosts -> {
+            AdditionalVariableCostsScreen(
+                viewModel = additionalCostsViewModel,
+                onBack = { route = MainRoute.Tabs }
+            )
+        }
+        MainRoute.Configuration -> {
+            ConfigurationScreen(
+                settingsViewModel = settingsViewModel,
+                onBack = { route = MainRoute.Tabs }
+            )
         }
     }
 }
@@ -188,8 +144,6 @@ data class TabItem(
     val icon: ImageVector,
     val content: @Composable () -> Unit
 )
-
-private const val TAB_COUNT = 4
 
 @Composable
 private fun RecipeDetailScreenWrapper(

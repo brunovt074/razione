@@ -17,11 +17,7 @@ class FixedCostsViewModel(
     private val _state = MutableStateFlow(FixedCostsState())
     val state: StateFlow<FixedCostsState> = _state.asStateFlow()
 
-    init {
-        loadCosts()
-    }
-
-    private fun loadCosts() {
+    fun loadCosts() {
         viewModelScope.launch {
             fixedCostRepository.observeAll().collect { list ->
                 val total = list.sumOf { it.monthlyAmount }
