@@ -30,65 +30,51 @@ class DatabaseSeeder(
     private suspend fun seedIngredients() {
         val now = System.currentTimeMillis()
         val ingredients = listOf(
-            Ingredient(name = "Harina", purchaseUnit = "kg", purchasePrice = 1200.0, contentAmount = 1.0, usageUnit = "kg", updatedAt = now),
-            Ingredient(name = "Mozzarella", purchaseUnit = "kg", purchasePrice = 4500.0, contentAmount = 1.0, usageUnit = "kg", updatedAt = now),
-            Ingredient(name = "Salsa de tomate", purchaseUnit = "lt", purchasePrice = 1800.0, contentAmount = 1.0, usageUnit = "lt", updatedAt = now),
-            Ingredient(name = "Levadura", purchaseUnit = "kg", purchasePrice = 3500.0, contentAmount = 1.0, usageUnit = "kg", updatedAt = now),
-            Ingredient(name = "Aceite", purchaseUnit = "lt", purchasePrice = 2200.0, contentAmount = 1.0, usageUnit = "lt", updatedAt = now),
-            Ingredient(name = "Sal", purchaseUnit = "kg", purchasePrice = 800.0, contentAmount = 1.0, usageUnit = "kg", updatedAt = now)
+            Ingredient(name = "Harina", purchaseUnit = "kg", purchasePrice = 1200.0, contentAmount = 1.0, usageUnit = "g", updatedAt = now),
+            Ingredient(name = "Mozzarella", purchaseUnit = "kg", purchasePrice = 4500.0, contentAmount = 1.0, usageUnit = "g", updatedAt = now),
+            Ingredient(name = "Salsa de tomate", purchaseUnit = "lt", purchasePrice = 1800.0, contentAmount = 1.0, usageUnit = "cc", updatedAt = now),
+            Ingredient(name = "Levadura", purchaseUnit = "kg", purchasePrice = 3500.0, contentAmount = 1.0, usageUnit = "g", updatedAt = now),
+            Ingredient(name = "Aceite", purchaseUnit = "lt", purchasePrice = 2200.0, contentAmount = 1.0, usageUnit = "cc", updatedAt = now),
+            Ingredient(name = "Sal", purchaseUnit = "kg", purchasePrice = 800.0, contentAmount = 1.0, usageUnit = "g", updatedAt = now),
+            Ingredient(name = "Cebolla", purchaseUnit = "kg", purchasePrice = 600.0, contentAmount = 1.0, usageUnit = "g", updatedAt = now)
         )
         ingredients.forEach { ingredientRepository.insert(it) }
     }
 
     private suspend fun seedRecipes() {
         val now = System.currentTimeMillis()
-        val recipe = Recipe(
+        val muzzarella = Recipe(
             name = "Muzzarela",
             parentRecipeId = null,
             createdAt = now,
             updatedAt = now
         )
-        val recipeId = recipeRepository.insert(recipe)
+        val muzzarellaId = recipeRepository.insert(muzzarella)
+
+        val fugazzeta = Recipe(
+            name = "Fugazzeta",
+            parentRecipeId = muzzarellaId,
+            createdAt = now,
+            updatedAt = now
+        )
+        val fugazzetaId = recipeRepository.insert(fugazzeta)
 
         val ingredientes = ingredientRepository.observeAll().first()
-        val masaIds = ingredientes.filter { it.name == "Harina" || it.name == "Levadura" || it.name == "Sal" || it.name == "Aceite" }
-        val cubiertaIds = ingredientes.filter { it.name == "Mozzarella" || it.name == "Salsa de tomate" }
 
-        val recipeIngredients = mutableListOf<RecipeIngredient>()
+        val muzzarellaIngredients = listOf(
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Harina" }.id, usagePerPizza = 250.0, yieldPizzas = null),
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Mozzarella" }.id, usagePerPizza = 150.0, yieldPizzas = null),
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Salsa de tomate" }.id, usagePerPizza = 80.0, yieldPizzas = null),
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Levadura" }.id, usagePerPizza = 10.0, yieldPizzas = null),
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Aceite" }.id, usagePerPizza = 15.0, yieldPizzas = null),
+            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Sal" }.id, usagePerPizza = 5.0, yieldPizzas = null)
+        )
+        recipeRepository.setIngredients(muzzarellaId, muzzarellaIngredients)
 
-        masaIds.forEach { ing ->
-            recipeIngredients.add(
-                RecipeIngredient(
-                    recipeId = recipeId,
-                    ingredientId = ing.id,
-                    usagePerPizza = when (ing.name) {
-                        "Harina" -> 0.25
-                        "Levadura" -> 0.015
-                        "Sal" -> 0.01
-                        "Aceite" -> 0.015
-                        else -> null
-                    },
-                    yieldPizzas = null
-                )
-            )
-        }
-
-        cubiertaIds.forEach { ing ->
-            recipeIngredients.add(
-                RecipeIngredient(
-                    recipeId = recipeId,
-                    ingredientId = ing.id,
-                    usagePerPizza = when (ing.name) {
-                        "Mozzarella" -> 0.25
-                        "Salsa de tomate" -> 0.15
-                        else -> null
-                    },
-                    yieldPizzas = null
-                )
-            )
-        }
-
-        recipeRepository.setIngredients(recipeId, recipeIngredients)
+        val fugazzetaIngredients = listOf(
+            RecipeIngredient(recipeId = fugazzetaId, ingredientId = ingredientes.first { it.name == "Cebolla" }.id, usagePerPizza = 100.0, yieldPizzas = null)
+        )
+        recipeRepository.setIngredients(fugazzetaId, fugazzetaIngredients)
     }
 
     private suspend fun seedAdditionalCosts() {
@@ -102,6 +88,6 @@ class DatabaseSeeder(
     }
 
     private suspend fun seedSettings() {
-        settingsRepository.updateSettings(AppSettings())
+        settingsRepository.updateSettings(AppSettings(estimatedMonthlyProduction = 500))
     }
 }

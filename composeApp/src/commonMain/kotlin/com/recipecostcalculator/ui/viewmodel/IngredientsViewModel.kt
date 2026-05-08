@@ -17,11 +17,7 @@ class IngredientsViewModel(
     private val _state = MutableStateFlow(IngredientsState())
     val state: StateFlow<IngredientsState> = _state.asStateFlow()
 
-    init {
-        loadIngredients()
-    }
-
-    private fun loadIngredients() {
+    fun loadIngredients() {
         viewModelScope.launch {
             ingredientRepository.observeAll().collect { list ->
                 _state.update { it.copy(ingredients = list, isLoading = false) }

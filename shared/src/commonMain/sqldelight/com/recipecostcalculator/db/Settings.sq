@@ -6,7 +6,7 @@ CREATE TABLE settings (
 INSERT OR IGNORE INTO settings(key, value) VALUES ('batch_size', '6');
 INSERT OR IGNORE INTO settings(key, value) VALUES ('waste_factor', '0.0');
 INSERT OR IGNORE INTO settings(key, value) VALUES ('discount_pct', '0.0');
-INSERT OR IGNORE INTO settings(key, value) VALUES ('est_monthly_prod', '0');
+INSERT OR IGNORE INTO settings(key, value) VALUES ('est_monthly_prod', '500');
 INSERT OR IGNORE INTO settings(key, value) VALUES ('target_margin', '0.5');
 
 selectAll:

@@ -19,10 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
+import com.recipecostcalculator.ui.strings.es.Dashboard
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun DashboardScreen(viewModel: DashboardViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDashboard()
+    }
 
     Scaffold { paddingValues ->
         Column(
@@ -33,7 +39,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Dashboard",
+                text = Dashboard.title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -47,31 +53,31 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 }
             } else {
                 KPICard(
-                    title = "Costo Variable Promedio",
+                    title = Dashboard.avgVariableCost,
                     value = "$${String.format("%.2f", state.avgVariableCost)}",
                     subtitle = "Por pizza"
                 )
 
                 KPICard(
-                    title = "Costo Total Promedio",
+                    title = Dashboard.avgTotalCost,
                     value = "$${String.format("%.2f", state.avgTotalCost)}",
                     subtitle = "Incluye costos fijos"
                 )
 
                 KPICard(
-                    title = "Costos Fijos Mensuales",
+                    title = Dashboard.fixedCostsMonthly,
                     value = "$${String.format("%.2f", state.totalFixedCosts)}",
                     subtitle = "Total mensuales"
                 )
 
                 KPICard(
-                    title = "Producción Estimada",
+                    title = Dashboard.estimatedProduction,
                     value = "${state.estimatedProduction}",
                     subtitle = "Pizzas por mes"
                 )
 
                 Text(
-                    text = "${state.recipesWithCosts.size} recetas calculadas",
+                    text = "${state.recipesWithCosts.size} ${Dashboard.recipesWithCosts}",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )

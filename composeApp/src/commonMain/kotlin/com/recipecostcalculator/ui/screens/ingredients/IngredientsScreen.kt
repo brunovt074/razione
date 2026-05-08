@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,10 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
     var priceDialogIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var deleteDialogIngredient by remember { mutableStateOf<Ingredient?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(Unit) {
+        viewModel.loadIngredients()
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -189,7 +194,7 @@ private fun IngredientCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${ingredient.contentAmount} ${ingredient.usageUnit}",
+                text = "${ingredient.contentAmount} ${ingredient.purchaseUnit}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

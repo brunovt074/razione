@@ -17,11 +17,7 @@ class AdditionalVariableCostsViewModel(
     private val _state = MutableStateFlow(AdditionalVariableCostsState())
     val state: StateFlow<AdditionalVariableCostsState> = _state.asStateFlow()
 
-    init {
-        loadCosts()
-    }
-
-    private fun loadCosts() {
+    fun loadCosts() {
         viewModelScope.launch {
             additionalCostRepository.observeAll().collect { list ->
                 val total = list.sumOf { it.unitCost }
