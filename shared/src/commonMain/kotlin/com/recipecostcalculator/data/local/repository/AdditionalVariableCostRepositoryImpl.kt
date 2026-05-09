@@ -4,6 +4,7 @@ import com.recipecostcalculator.db.PizzeriaDatabase
 import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -20,6 +21,7 @@ class AdditionalVariableCostRepositoryImpl(
         refreshSignal.tryEmit(Unit)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeAll(): Flow<List<AdditionalVariableCost>> = refreshSignal.flatMapLatest {
         kotlinx.coroutines.flow.flow {
             val list = queries.selectAll().executeAsList().map { row ->
@@ -27,7 +29,7 @@ class AdditionalVariableCostRepositoryImpl(
                     id = row.id,
                     recipeId = row.recipe_id,
                     concept = row.concept,
-                    unitCost = row.unit_cost,
+                    unitCost = com.recipecostcalculator.financial.domain.model.Money(row.unit_cost),
                     note = row.note
                 )
             }
@@ -39,6 +41,19 @@ class AdditionalVariableCostRepositoryImpl(
         refreshSignal.emit(Unit)
     }
 
+    override suspend fun getAll(): List<AdditionalVariableCost> =
+        withContext(Dispatchers.IO) {
+            queries.selectAll().executeAsList().map { row ->
+                AdditionalVariableCost(
+                    id = row.id,
+                    recipeId = row.recipe_id,
+                    concept = row.concept,
+                    unitCost = com.recipecostcalculator.financial.domain.model.Money(row.unit_cost),
+                    note = row.note
+                )
+            }
+        }
+
     override suspend fun getForRecipe(recipeId: Long): List<AdditionalVariableCost> =
         withContext(Dispatchers.IO) {
             queries.selectByRecipe(recipeId).executeAsList().map { row ->
@@ -46,7 +61,7 @@ class AdditionalVariableCostRepositoryImpl(
                     id = row.id,
                     recipeId = row.recipe_id,
                     concept = row.concept,
-                    unitCost = row.unit_cost,
+                    unitCost = com.recipecostcalculator.financial.domain.model.Money(row.unit_cost),
                     note = row.note
                 )
             }
@@ -57,7 +72,7 @@ class AdditionalVariableCostRepositoryImpl(
             queries.insert(
                 recipeId = cost.recipeId,
                 concept = cost.concept,
-                unitCost = cost.unitCost,
+                unitCost = cost.unitCost.amount,
                 note = cost.note
             )
             queries.lastInsertId().executeAsOne().also { refresh() }
@@ -67,7 +82,7 @@ class AdditionalVariableCostRepositoryImpl(
         withContext(Dispatchers.IO) {
             queries.update(
                 concept = cost.concept,
-                unitCost = cost.unitCost,
+                unitCost = cost.unitCost.amount,
                 note = cost.note,
                 id = cost.id
             )

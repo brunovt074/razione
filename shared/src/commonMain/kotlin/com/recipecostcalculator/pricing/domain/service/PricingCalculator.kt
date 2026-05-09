@@ -42,7 +42,7 @@ class PricingCalculator {
             CostMode.TOTAL -> breakdown.totalCostPerUnit
         }
 
-        val grossProfit = netIncome - breakdown.totalVariableCost
+        val grossProfit = netIncome - chosenCost
 
         val grossMargin: Percentage? = if (netIncome.isZero()) null else {
             runCatching {
@@ -50,8 +50,8 @@ class PricingCalculator {
             }.getOrNull()
         }
 
-        val markup: Double? = if (breakdown.totalVariableCost.isZero()) null else {
-            grossProfit.amount / breakdown.totalVariableCost.amount
+        val markup: Double? = if (chosenCost.isZero()) null else {
+            grossProfit.amount / chosenCost.amount
         }
 
         val suggestedPrice = calculateSuggestedPrice(

@@ -3,7 +3,9 @@ package com.recipecostcalculator.data.local.repository
 import com.recipecostcalculator.db.PizzeriaDatabase
 import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.domain.repository.FixedCostRepository
+import com.recipecostcalculator.financial.domain.model.Money
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -20,13 +22,14 @@ class FixedCostRepositoryImpl(
         refreshSignal.tryEmit(Unit)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeAll(): Flow<List<FixedCost>> = refreshSignal.flatMapLatest {
         kotlinx.coroutines.flow.flow {
             val list = queries.selectAll().executeAsList().map { row ->
                 FixedCost(
                     id = row.id,
                     concept = row.concept,
-                    monthlyAmount = row.monthly_amount
+                    monthlyAmount = Money(row.monthly_amount)
                 )
             }
             emit(list)
@@ -37,26 +40,37 @@ class FixedCostRepositoryImpl(
         refreshSignal.emit(Unit)
     }
 
-    override suspend fun getTotalMonthly(): Double =
+    override suspend fun getAll(): List<FixedCost> =
         withContext(Dispatchers.IO) {
-            queries.totalMonthly().executeAsOne()
+            queries.selectAll().executeAsList().map { row ->
+                FixedCost(
+                    id = row.id,
+                    concept = row.concept,
+                    monthlyAmount = Money(row.monthly_amount)
+                )
+            }
         }
 
-    override suspend fun insert(cost: FixedCost): Long =
+    override suspend fun getTotalMonthly(): Money =
+        withContext(Dispatchers.IO) {
+            Money(queries.totalMonthly().executeAsOne())
+        }
+
+    override suspend fun insert(fixedCost: FixedCost): Long =
         withContext(Dispatchers.IO) {
             queries.insert(
-                concept = cost.concept,
-                monthlyAmount = cost.monthlyAmount
+                concept = fixedCost.concept,
+                monthlyAmount = fixedCost.monthlyAmount.amount
             )
             queries.lastInsertId().executeAsOne().also { refresh() }
         }
 
-    override suspend fun update(cost: FixedCost): Unit =
+    override suspend fun update(fixedCost: FixedCost): Unit =
         withContext(Dispatchers.IO) {
             queries.update(
-                concept = cost.concept,
-                monthlyAmount = cost.monthlyAmount,
-                id = cost.id
+                concept = fixedCost.concept,
+                monthlyAmount = fixedCost.monthlyAmount.amount,
+                id = fixedCost.id
             )
             refresh()
             Unit

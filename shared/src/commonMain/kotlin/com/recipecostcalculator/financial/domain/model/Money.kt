@@ -18,6 +18,10 @@ data class Money(val amount: Double) {
         require(divisor != 0) { "Cannot divide Money by zero" }
         return Money(round(amount / divisor.toDouble()))
     }
+    operator fun div(divisor: Quantity): Money {
+        require(divisor.value != 0.0) { "Cannot divide Money by zero" }
+        return Money(round(amount / divisor.value))
+    }
     operator fun unaryMinus(): Money = Money(-amount)
     operator fun compareTo(other: Money): Int = amount.compareTo(other.amount)
 

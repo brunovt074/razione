@@ -3,10 +3,12 @@ package com.recipecostcalculator.data.local.repository
 import com.recipecostcalculator.db.PizzeriaDatabase
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.repository.IngredientRepository
+import com.recipecostcalculator.financial.domain.model.Money
+import com.recipecostcalculator.financial.domain.model.Quantity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
@@ -21,6 +23,7 @@ class IngredientRepositoryImpl(
         refreshSignal.tryEmit(Unit)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeAll(): Flow<List<Ingredient>> = refreshSignal.flatMapLatest {
         kotlinx.coroutines.flow.flow {
             val list = queries.selectAll().executeAsList().map { row ->
@@ -28,8 +31,8 @@ class IngredientRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     purchaseUnit = row.purchase_unit,
-                    purchasePrice = row.purchase_price,
-                    contentAmount = row.content_amount,
+                    purchasePrice = Money(row.purchase_price),
+                    contentAmount = Quantity(row.content_amount),
                     usageUnit = row.usage_unit,
                     isActive = row.is_active == 1L,
                     updatedAt = row.updated_at
@@ -50,8 +53,24 @@ class IngredientRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     purchaseUnit = row.purchase_unit,
-                    purchasePrice = row.purchase_price,
-                    contentAmount = row.content_amount,
+                    purchasePrice = Money(row.purchase_price),
+                    contentAmount = Quantity(row.content_amount),
+                    usageUnit = row.usage_unit,
+                    isActive = row.is_active == 1L,
+                    updatedAt = row.updated_at
+                )
+            }
+        }
+
+    override suspend fun getAllActive(): List<Ingredient> =
+        withContext(Dispatchers.IO) {
+            queries.selectAll().executeAsList().map { row ->
+                Ingredient(
+                    id = row.id,
+                    name = row.name,
+                    purchaseUnit = row.purchase_unit,
+                    purchasePrice = Money(row.purchase_price),
+                    contentAmount = Quantity(row.content_amount),
                     usageUnit = row.usage_unit,
                     isActive = row.is_active == 1L,
                     updatedAt = row.updated_at
@@ -64,8 +83,8 @@ class IngredientRepositoryImpl(
             queries.insert(
                 name = ingredient.name,
                 purchaseUnit = ingredient.purchaseUnit,
-                purchasePrice = ingredient.purchasePrice,
-                contentAmount = ingredient.contentAmount,
+                purchasePrice = ingredient.purchasePrice.amount,
+                contentAmount = ingredient.contentAmount.value,
                 usageUnit = ingredient.usageUnit,
                 updatedAt = ingredient.updatedAt
             )
@@ -77,8 +96,8 @@ class IngredientRepositoryImpl(
             queries.updateAll(
                 name = ingredient.name,
                 purchaseUnit = ingredient.purchaseUnit,
-                purchasePrice = ingredient.purchasePrice,
-                contentAmount = ingredient.contentAmount,
+                purchasePrice = ingredient.purchasePrice.amount,
+                contentAmount = ingredient.contentAmount.value,
                 usageUnit = ingredient.usageUnit,
                 updatedAt = System.currentTimeMillis(),
                 id = ingredient.id
@@ -87,11 +106,11 @@ class IngredientRepositoryImpl(
             Unit
         }
 
-    override suspend fun updatePrice(id: Long, newPrice: Double): Unit =
+    override suspend fun updatePrice(id: Long, newPrice: Money, updatedAt: Long): Unit =
         withContext(Dispatchers.IO) {
             queries.updatePrice(
-                price = newPrice,
-                updatedAt = System.currentTimeMillis(),
+                price = newPrice.amount,
+                updatedAt = updatedAt,
                 id = id
             )
             refresh()

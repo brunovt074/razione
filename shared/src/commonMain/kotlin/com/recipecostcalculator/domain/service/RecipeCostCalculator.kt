@@ -7,7 +7,6 @@ import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.financial.domain.model.Percentage
-import java.math.BigDecimal
 
 class RecipeCostCalculator(
     private val ingredientCostCalculator: IngredientCostCalculator,
@@ -70,8 +69,8 @@ class RecipeCostCalculator(
 
         var totalAdditional = Money.ZERO
         input.additionalCosts.forEach { extra ->
-            val wasteMultiplier = BigDecimal.ONE.add(input.wasteFactor.value)
-            val costWithWaste = extra.unitCost * wasteMultiplier.toDouble()
+            val wasteMultiplier = 1.0 + input.wasteFactor.value
+            val costWithWaste = extra.unitCost * wasteMultiplier
             totalAdditional += costWithWaste
         }
 

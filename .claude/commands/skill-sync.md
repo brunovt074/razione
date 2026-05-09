@@ -1,0 +1,1 @@
+/home/br1/dev/kotlin/recipe-cost-calculator/skills/skill-sync/SKILL.md

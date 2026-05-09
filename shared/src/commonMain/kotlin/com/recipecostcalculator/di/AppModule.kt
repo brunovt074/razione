@@ -28,7 +28,7 @@ val appModule = module {
     single { RecipeCostCalculator(get()) }
     single { PricingCalculator() }
 
-    factory { CalculateRecipeCostUseCase(get(), get(), get(), get(), get(), get()) }
+    factory { CalculateRecipeCostUseCase(get(), get(), get(), get(), get()) }
 
     single { DatabaseSeeder(get(), get(), get(), get()) }
 }

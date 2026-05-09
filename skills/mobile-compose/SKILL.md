@@ -1,5 +1,5 @@
 ---
-name: mobile-compose
+skill: mobile-compose
 description: >
   Mobile-first architecture patterns for Kotlin/Android with Jetpack Compose.
   Trigger: When developing mobile apps, implementing MVI, adaptive layouts, or Clean Architecture in Android.
@@ -8,6 +8,10 @@ license: MIT
 metadata:
   author: gentleman-programming
   version: "1.0"
+auto_invoke:
+  - Creating or modifying Compose mobile screens
+  - Implementing MVI for Android or mobile targets
+  - Adaptive layouts or WindowSizeClass usage
 ---
 
 ## Purpose

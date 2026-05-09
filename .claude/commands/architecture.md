@@ -1,0 +1,1 @@
+/home/br1/dev/kotlin/recipe-cost-calculator/skills/architecture/SKILL.md

@@ -1,9 +1,11 @@
 package com.recipecostcalculator.data.local.repository
 
 import com.recipecostcalculator.db.PizzeriaDatabase
+import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
+import com.recipecostcalculator.financial.domain.model.Quantity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -39,25 +41,49 @@ class RecipeRepositoryImpl(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun loadRecipeIngredients(recipeId: Long): List<RecipeIngredient> =
         recipeIngredientQueries.selectByRecipe(recipeId).executeAsList().map { row ->
             RecipeIngredient(
                 id = row.id,
                 recipeId = row.recipe_id,
                 ingredientId = row.ingredient_id,
-                ingredient = null,
-                usagePerPizza = row.usage_per_pizza,
-                yieldPizzas = row.yield_pizzas
+                primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas),
+                ingredient = null
             )
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun rowToUsageMode(usagePerPizza: Double?, yieldPizzas: Long?): IngredientUsageMode {
+        return when {
+            usagePerPizza != null -> IngredientUsageMode.ByUsage(Quantity(usagePerPizza))
+            yieldPizzas != null -> IngredientUsageMode.ByYield(yieldPizzas.toInt())
+            else -> IngredientUsageMode.ByUsage(Quantity(0.0))
+        }
+    }
 
     private suspend fun refresh() {
         refreshSignal.emit(Unit)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun getById(id: Long): Recipe? =
         withContext(Dispatchers.IO) {
             queries.selectById(id).executeAsOneOrNull()?.let { row ->
+                Recipe(
+                    id = row.id,
+                    name = row.name,
+                    parentRecipeId = row.parent_recipe_id,
+                    recipeIngredients = loadRecipeIngredients(row.id),
+                    createdAt = row.created_at,
+                    updatedAt = row.updated_at
+                )
+            }
+        }
+
+    override suspend fun getAll(): List<Recipe> =
+        withContext(Dispatchers.IO) {
+            queries.selectAll().executeAsList().map { row ->
                 Recipe(
                     id = row.id,
                     name = row.name,
@@ -131,11 +157,12 @@ class RecipeRepositoryImpl(
         withContext(Dispatchers.IO) {
             recipeIngredientQueries.deleteByRecipe(recipeId)
             ingredients.forEach { ri ->
+                val (usagePerPizza, yieldPizzas) = usageModeToRowValues(ri.primaryMode)
                 recipeIngredientQueries.insertOrReplace(
                     recipeId = recipeId,
                     ingredientId = ri.ingredientId,
-                    usagePerPizza = ri.usagePerPizza,
-                    yieldPizzas = ri.yieldPizzas
+                    usagePerPizza = usagePerPizza,
+                    yieldPizzas = yieldPizzas
                 )
             }
             refresh()
@@ -149,10 +176,39 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     recipeId = row.recipe_id,
                     ingredientId = row.ingredient_id,
-                    ingredient = null,
-                    usagePerPizza = row.usage_per_pizza,
-                    yieldPizzas = row.yield_pizzas
+                    primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas),
+                    ingredient = null
                 )
             }
         }
+
+    override suspend fun findAncestorChain(recipeId: Long, maxDepth: Int): List<Recipe> =
+        withContext(Dispatchers.IO) {
+            val chain = mutableListOf<Recipe>()
+            var currentId: Long? = recipeId
+            var depth = 0
+            while (currentId != null && depth < maxDepth) {
+                val recipe = queries.selectById(currentId).executeAsOneOrNull() ?: break
+                chain.add(
+                    Recipe(
+                        id = recipe.id,
+                        name = recipe.name,
+                        parentRecipeId = recipe.parent_recipe_id,
+                        recipeIngredients = loadRecipeIngredients(recipe.id),
+                        createdAt = recipe.created_at,
+                        updatedAt = recipe.updated_at
+                    )
+                )
+                currentId = recipe.parent_recipe_id
+                depth++
+            }
+            chain
+        }
+
+    private fun usageModeToRowValues(mode: IngredientUsageMode): Pair<Double?, Long?> {
+        return when (mode) {
+            is IngredientUsageMode.ByUsage -> Pair(mode.amountPerPizza.value, null)
+            is IngredientUsageMode.ByYield -> Pair(null, mode.pizzasPerPurchaseUnit.toLong())
+        }
+    }
 }
