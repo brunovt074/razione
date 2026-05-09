@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.FixedCost
+import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.FixedCosts
@@ -129,7 +130,7 @@ fun FixedCostsScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "$${String.format("%.2f", state.totalMonthly)}",
+                            text = "$${String.format("%.2f", state.totalMonthly.amount)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -207,7 +208,7 @@ private fun FixedCostCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "$${String.format("%.2f", fixedCost.monthlyAmount)}",
+                text = "$${String.format("%.2f", fixedCost.monthlyAmount.amount)}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -277,7 +278,7 @@ private fun FixedCostForm(
                         val newCost = FixedCost(
                             id = cost?.id ?: 0,
                             concept = concept.trim(),
-                            monthlyAmount = amount.toDouble()
+                            monthlyAmount = Money(amount.toDouble())
                         )
                         onSave(newCost)
                     }

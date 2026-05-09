@@ -89,7 +89,10 @@ fun RecipesScreen(
                             onClick = { onRecipeClick(recipe.id) },
                             onLongClick = { deleteDialogRecipe = recipe }
                         )
-}
+                    }
+                }
+            }
+        }
     }
 
     deleteDialogRecipe?.let { recipe ->
@@ -111,9 +114,6 @@ fun RecipesScreen(
                 }
             }
         )
-    }
-}
-        }
     }
 }
 
@@ -156,7 +156,7 @@ private fun RecipeCard(
             )
             cost?.let {
                 Text(
-                    text = "${Recipes.cost} $${String.format("%.2f", it.totalCostPerUnit)}",
+                    text = "${Recipes.cost} $${String.format("%.2f", it.totalCostPerUnit.amount)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary

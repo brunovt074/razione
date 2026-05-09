@@ -33,12 +33,6 @@ class SettingsViewModel(
         }
     }
 
-    fun updateCommissionPct(value: Double) {
-        viewModelScope.launch {
-            settingsRepository.updateSetting(SettingKey.COMMISSION_PCT, value.toString())
-        }
-    }
-
     fun updateEstimatedProduction(value: Int) {
         viewModelScope.launch {
             settingsRepository.updateSetting(SettingKey.ESTIMATED_MONTHLY_PRODUCTION, value.toString())
@@ -48,6 +42,12 @@ class SettingsViewModel(
     fun updateTargetMargin(value: Double) {
         viewModelScope.launch {
             settingsRepository.updateSetting(SettingKey.TARGET_MARGIN, value.toString())
+        }
+    }
+
+    fun updateDiscountPct(value: Double) {
+        viewModelScope.launch {
+            settingsRepository.updateSetting(SettingKey.DISCOUNT_PCT, value.toString())
         }
     }
 }

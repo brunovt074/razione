@@ -49,8 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
+import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
+import com.recipecostcalculator.financial.domain.model.Quantity
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -267,7 +269,7 @@ fun RecipeDetailScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             inheritedIngredients.forEach { ingredient ->
                                 Text(
-                                    text = "• ${ingredient.name} (${ingredient.contentAmount} ${ingredient.usageUnit})",
+                                    text = "• ${ingredient.name} (${ingredient.contentAmount.value} ${ingredient.usageUnit})",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -302,7 +304,12 @@ fun RecipeDetailScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "${ri.ingredient?.name ?: "ID: ${ri.ingredientId}"} - ${ri.usagePerPizza} ${ri.ingredient?.usageUnit ?: ""}",
+                                        text = "${ri.ingredient?.name ?: "ID: ${ri.ingredientId}"} - ${
+                                            when (val mode = ri.primaryMode) {
+                                                is IngredientUsageMode.ByUsage -> "${mode.amountPerPizza.value} ${ri.ingredient?.usageUnit ?: ""}"
+                                                is IngredientUsageMode.ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
+                                            }
+                                        }",
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     IconButton(onClick = { ingredientToDelete = ri }) {
@@ -371,8 +378,7 @@ fun RecipeDetailScreen(
                 ownIngredients = ownIngredients + RecipeIngredient(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
-                    usagePerPizza = usageValue,
-                    yieldPizzas = null
+                    primaryMode = IngredientUsageMode.ByUsage(Quantity(usageValue))
                 )
                 showIngredientSelector = false
             },

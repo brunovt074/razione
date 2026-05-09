@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
+import com.recipecostcalculator.financial.domain.model.Money
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,7 @@ class AdditionalVariableCostsViewModel(
     fun loadCosts() {
         viewModelScope.launch {
             additionalCostRepository.observeAll().collect { list ->
-                val total = list.sumOf { it.unitCost }
+                val total = list.fold(Money.ZERO) { acc, cost -> acc + cost.unitCost }
                 _state.update { it.copy(costs = list, totalCost = total, isLoading = false) }
             }
         }
@@ -46,7 +47,7 @@ class AdditionalVariableCostsViewModel(
 
 data class AdditionalVariableCostsState(
     val costs: List<AdditionalVariableCost> = emptyList(),
-    val totalCost: Double = 0.0,
+    val totalCost: Money = Money.ZERO,
     val isLoading: Boolean = true,
     val error: String? = null
 )

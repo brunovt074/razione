@@ -129,7 +129,7 @@ fun AdditionalVariableCostsScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "$${String.format("%.2f", state.totalCost)}",
+                            text = "$${String.format("%.2f", state.totalCost.amount)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -207,7 +207,7 @@ private fun AdditionalVariableCostCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "$${String.format("%.2f", cost.unitCost)}",
+                text = "$${String.format("%.2f", cost.unitCost.amount)}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -294,7 +294,7 @@ private fun AdditionalVariableCostForm(
                             id = cost?.id ?: 0,
                             recipeId = cost?.recipeId,
                             concept = concept.trim(),
-                            unitCost = unitCost.toDouble(),
+                            unitCost = com.recipecostcalculator.financial.domain.model.Money(unitCost.toDouble()),
                             note = note.trim()
                         )
                         onSave(newCost)
