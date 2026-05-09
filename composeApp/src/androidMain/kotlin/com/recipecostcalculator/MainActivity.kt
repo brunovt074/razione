@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 LaunchedEffect(Unit) {
-                    seeder.seedIfEmpty()
+                    seeder.seedIfNeeded()
                 }
                 App(
                     dashboardViewModel = dashboardViewModel,

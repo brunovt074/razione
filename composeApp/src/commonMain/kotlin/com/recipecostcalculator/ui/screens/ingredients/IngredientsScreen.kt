@@ -45,6 +45,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
+import com.recipecostcalculator.financial.domain.model.Money
+import com.recipecostcalculator.financial.domain.model.Quantity
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.Ingredients
@@ -137,7 +139,7 @@ fun IngredientsScreen(viewModel: IngredientsViewModel) {
             currentPrice = ingredient.purchasePrice,
             onDismiss = { priceDialogIngredient = null },
             onConfirm = { newPrice ->
-                viewModel.onUpdatePrice(ingredient.id, newPrice)
+                viewModel.onUpdatePrice(ingredient.id, newPrice.amount)
                 priceDialogIngredient = null
             }
         )
@@ -194,12 +196,12 @@ private fun IngredientCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${ingredient.contentAmount} ${ingredient.purchaseUnit}",
+                text = "${ingredient.contentAmount.value} ${ingredient.purchaseUnit}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "$${String.format("%.2f", ingredient.purchasePrice)} / ${ingredient.purchaseUnit}",
+                text = "$${String.format("%.2f", ingredient.purchasePrice.amount)} / ${ingredient.purchaseUnit}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -214,11 +216,11 @@ private fun IngredientCard(
 
 @Composable
 private fun PriceUpdateDialog(
-    currentPrice: Double,
+    currentPrice: Money,
     onDismiss: () -> Unit,
-    onConfirm: (Double) -> Unit
+    onConfirm: (Money) -> Unit
 ) {
-    var priceText by remember { mutableStateOf(currentPrice.toString()) }
+    var priceText by remember { mutableStateOf(currentPrice.amount.toString()) }
     var error by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -237,9 +239,9 @@ private fun PriceUpdateDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                val newPrice = priceText.toDoubleOrNull()
-                if (newPrice != null && newPrice > 0) {
-                    onConfirm(newPrice)
+                val newPriceAmount = priceText.toDoubleOrNull()
+                if (newPriceAmount != null && newPriceAmount > 0) {
+                    onConfirm(Money(newPriceAmount))
                 } else {
                     error = true
                 }
@@ -391,8 +393,8 @@ private fun IngredientForm(
                             id = ingredient?.id ?: 0,
                             name = name.trim(),
                             purchaseUnit = purchaseUnit,
-                            purchasePrice = purchasePrice.toDouble(),
-                            contentAmount = contentAmount.toDouble(),
+                            purchasePrice = Money(purchasePrice.toDouble()),
+                            contentAmount = Quantity(contentAmount.toDouble()),
                             usageUnit = usageUnit,
                             isActive = ingredient?.isActive ?: true,
                             updatedAt = System.currentTimeMillis()

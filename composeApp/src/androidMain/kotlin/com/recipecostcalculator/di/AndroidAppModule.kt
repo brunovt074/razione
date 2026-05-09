@@ -56,13 +56,22 @@ val androidAppModule = module {
     single<DatabaseSeeder> { DatabaseSeeder(get(), get(), get(), get()) }
 
     viewModel<IngredientsViewModel> { IngredientsViewModel(ingredientRepository = get()) }
-    viewModel<RecipesViewModel> { RecipesViewModel(recipeRepository = get(), calculateRecipeCostUseCase = get()) }
+    viewModel<RecipesViewModel> {
+        RecipesViewModel(
+            recipeRepository = get(),
+            ingredientRepository = get(),
+            additionalCostRepository = get(),
+            calculateRecipeCostUseCase = get()
+        )
+    }
     viewModel<FixedCostsViewModel> { FixedCostsViewModel(fixedCostRepository = get()) }
     viewModel<AdditionalVariableCostsViewModel> { AdditionalVariableCostsViewModel(additionalCostRepository = get()) }
     viewModel<DashboardViewModel> {
         DashboardViewModel(
             recipeRepository = get(),
+            ingredientRepository = get(),
             fixedCostRepository = get(),
+            additionalCostRepository = get(),
             settingsRepository = get(),
             calculateRecipeCostUseCase = get()
         )

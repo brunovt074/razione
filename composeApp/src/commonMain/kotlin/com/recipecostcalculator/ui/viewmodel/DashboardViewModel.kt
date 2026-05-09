@@ -3,60 +3,68 @@ package com.recipecostcalculator.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.recipecostcalculator.domain.model.CostBreakdown
+import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
 import com.recipecostcalculator.domain.repository.FixedCostRepository
+import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
 import com.recipecostcalculator.financial.domain.model.Money
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 
 class DashboardViewModel(
     private val recipeRepository: RecipeRepository,
+    private val ingredientRepository: IngredientRepository,
     private val fixedCostRepository: FixedCostRepository,
+    private val additionalCostRepository: AdditionalVariableCostRepository,
     private val settingsRepository: SettingsRepository,
     private val calculateRecipeCostUseCase: CalculateRecipeCostUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(DashboardState())
-    val state: StateFlow<DashboardState> = _state.asStateFlow()
-
-    fun loadDashboard() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val state: StateFlow<DashboardState> = combine(
+        ingredientRepository.observeAll(),
+        fixedCostRepository.observeAll(),
+        settingsRepository.observeSettings(),
+        recipeRepository.observeAll(),
+        additionalCostRepository.observeAll()
+    ) { _, _, _, _, _ -> Unit }
+    .flatMapLatest {
+        flow {
             val recipes = recipeRepository.getBaseRecipes()
             val totalFixed = fixedCostRepository.getTotalMonthly()
             val settings = settingsRepository.getSettings()
-
             val costs = recipes.mapNotNull { recipe ->
                 calculateRecipeCostUseCase(recipe.id).getOrNull()
             }
-
             val totalVar = costs.sumOf { it.totalVariableCost.amount.toDouble() }
             val totalTot = costs.sumOf { it.totalCostPerUnit.amount.toDouble() }
             val avgVariable = if (costs.isNotEmpty()) Money.of(totalVar / costs.size) else Money.ZERO
             val avgTotal = if (costs.isNotEmpty()) Money.of(totalTot / costs.size) else Money.ZERO
-
-            _state.update {
-                it.copy(
-                    recipesWithCosts = costs,
-                    totalFixedCosts = totalFixed,
-                    estimatedProduction = settings.estimatedMonthlyProduction,
-                    avgVariableCost = avgVariable,
-                    avgTotalCost = avgTotal,
-                    isLoading = false
-                )
-            }
+            emit(DashboardState(
+                recipesWithCosts = costs,
+                totalFixedCosts = totalFixed,
+                estimatedProduction = settings.estimatedMonthlyProduction,
+                avgVariableCost = avgVariable,
+                avgTotalCost = avgTotal,
+                isLoading = false
+            ))
         }
     }
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DashboardState(isLoading = true)
+    )
 
-    fun onRefresh() {
-        loadDashboard()
-    }
+    fun loadDashboard() = Unit
+    fun onRefresh() = Unit
 }
 
 data class DashboardState(
