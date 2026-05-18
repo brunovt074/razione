@@ -43,8 +43,8 @@ class DashboardViewModel(
             val costs = recipes.mapNotNull { recipe ->
                 calculateRecipeCostUseCase(recipe.id).getOrNull()
             }
-            val totalVar = costs.sumOf { it.totalVariableCost.amount.toDouble() }
-            val totalTot = costs.sumOf { it.totalCostPerUnit.amount.toDouble() }
+            val totalVar = costs.sumOf { it.totalVariableCost.amount }
+            val totalTot = costs.sumOf { it.totalCostPerUnit.amount }
             val avgVariable = if (costs.isNotEmpty()) Money.of(totalVar / costs.size) else Money.ZERO
             val avgTotal = if (costs.isNotEmpty()) Money.of(totalTot / costs.size) else Money.ZERO
             emit(DashboardState(

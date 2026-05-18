@@ -266,8 +266,8 @@ private fun IngredientForm(
 ) {
     var name by remember { mutableStateOf(ingredient?.name ?: "") }
     var purchaseUnit by remember { mutableStateOf(ingredient?.purchaseUnit ?: "kg") }
-    var purchasePrice by remember { mutableStateOf(ingredient?.purchasePrice?.toString() ?: "") }
-    var contentAmount by remember { mutableStateOf(ingredient?.contentAmount?.toString() ?: "") }
+    var purchasePrice by remember { mutableStateOf(ingredient?.purchasePrice?.amount?.toString() ?: "") }
+    var contentAmount by remember { mutableStateOf(ingredient?.contentAmount?.value?.toString() ?: "") }
     var usageUnit by remember { mutableStateOf(ingredient?.usageUnit ?: "g") }
 
     var nameError by remember { mutableStateOf(false) }

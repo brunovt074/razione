@@ -1,7 +1,7 @@
 package com.recipecostcalculator.domain.model
 
 import com.recipecostcalculator.financial.domain.model.Money
-
+// SEPARAR Y REFACTOR
 data class CostBreakdown(
     val recipeId: Long,
     val recipeName: String,

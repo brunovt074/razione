@@ -9,7 +9,7 @@ object Recipes {
     val noParentRecipe = "Ninguna (receta base)"
     val inheritedIngredients = "Ingredientes heredados (solo lectura)"
     val ownIngredients = "Ingredientes propios"
-    val ownIngredientsHint = "Ingredientes propios (swipe para eliminar)"
+    val ownIngredientsHint = "Ingredientes propios"
     val validatingCycles = "Validando ciclos..."
     val cycleError = "Error: Esta selección crearía un ciclo de herencia"
     val deleteIngredient = "Eliminar ingrediente"

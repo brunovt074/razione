@@ -92,6 +92,10 @@ fun RecipeDetailScreen(
     var ingredientToDelete by remember { mutableStateOf<RecipeIngredient?>(null) }
     var showIngredientSelector by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        ingredientsViewModel.loadIngredients()
+    }
+
     LaunchedEffect(recipeId) {
         if (recipeId != null && recipeId != 0L) {
             val recipe = recipeRepository.getById(recipeId)
@@ -119,6 +123,20 @@ fun RecipeDetailScreen(
             } ?: run {
                 inheritedIngredients = emptyList()
             }
+        }
+    }
+
+    LaunchedEffect(parentRecipeId, availableIngredients) {
+        val pid = parentRecipeId
+        if (pid != null && availableIngredients.isNotEmpty()) {
+            val parentRecipe = recipeRepository.getById(pid)
+            inheritedIngredients = parentRecipe?.let { pr ->
+                recipeRepository.getIngredients(pr.id).mapNotNull { ri ->
+                    availableIngredients.find { it.id == ri.ingredientId }
+                }
+            } ?: emptyList()
+        } else {
+            inheritedIngredients = emptyList()
         }
     }
 
@@ -378,7 +396,8 @@ fun RecipeDetailScreen(
                 ownIngredients = ownIngredients + RecipeIngredient(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
-                    primaryMode = IngredientUsageMode.ByUsage(Quantity(usageValue))
+                    primaryMode = IngredientUsageMode.ByUsage(Quantity(usageValue)),
+                    ingredient = ingredient
                 )
                 showIngredientSelector = false
             },
