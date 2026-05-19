@@ -54,8 +54,13 @@ class RecipesViewModel(
     fun onSave(recipe: Recipe) {
         viewModelScope.launch {
             runCatching {
-                if (recipe.id == 0L) recipeRepository.insert(recipe)
-                else recipeRepository.update(recipe)
+                val savedId = if (recipe.id == 0L) {
+                    recipeRepository.insert(recipe)
+                } else {
+                    recipeRepository.update(recipe)
+                    recipe.id
+                }
+                recipeRepository.setIngredients(savedId, recipe.recipeIngredients)
             }.onFailure { e -> _error.update { e.message } }
         }
     }
