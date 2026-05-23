@@ -48,6 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
@@ -393,7 +395,7 @@ fun RecipeDetailScreen(
                 ownIngredients = ownIngredients + RecipeIngredient(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
-                    primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity),
+                    primaryMode = ByUsage(canonicalQuantity),
                     ingredient = ingredient
                 )
                 showIngredientSelector = false
@@ -407,7 +409,7 @@ fun RecipeDetailScreen(
 private fun formatUsageForDisplay(ri: RecipeIngredient): String {
     val ingredient = ri.ingredient
     return when (val mode = ri.primaryMode) {
-        is IngredientUsageMode.ByUsage -> {
+        is ByUsage -> {
             if (ingredient != null) {
                 val displayQty = mode.amountPerPizza.convertTo(ingredient.usageUnit)
                 val formatted = if (displayQty.value == displayQty.value.toLong().toDouble()) {
@@ -420,7 +422,7 @@ private fun formatUsageForDisplay(ri: RecipeIngredient): String {
                 "${mode.amountPerPizza.value} ${mode.amountPerPizza.unit.label}"
             }
         }
-        is IngredientUsageMode.ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
+        is ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
     }
 }
 

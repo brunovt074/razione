@@ -11,10 +11,7 @@ import com.recipecostcalculator.domain.repository.FixedCostRepository
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
-import com.recipecostcalculator.domain.service.IngredientCostCalculator
-import com.recipecostcalculator.domain.service.RecipeCostCalculator
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
-import com.recipecostcalculator.pricing.domain.service.PricingCalculator
 import org.koin.dsl.module
 
 val appModule = module {
@@ -23,10 +20,6 @@ val appModule = module {
     single<AdditionalVariableCostRepository> { AdditionalVariableCostRepositoryImpl(get()) }
     single<FixedCostRepository> { FixedCostRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
-
-    single { IngredientCostCalculator() }
-    single { RecipeCostCalculator(get()) }
-    single { PricingCalculator() }
 
     factory { CalculateRecipeCostUseCase(get(), get(), get(), get(), get()) }
 

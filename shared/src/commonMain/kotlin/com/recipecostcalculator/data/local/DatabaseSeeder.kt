@@ -3,6 +3,8 @@ package com.recipecostcalculator.data.local
 import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.model.AppSettings
 import com.recipecostcalculator.domain.model.Ingredient
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
@@ -129,32 +131,32 @@ class DatabaseSeeder(
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Harina" }.id,
-                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(0.3, MeasurementUnit.KG))
+                primaryMode = ByUsage(canonicalQuantity(0.3, MeasurementUnit.KG))
             ),
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Mozzarella" }.id,
-                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(0.25, MeasurementUnit.KG))
+                primaryMode = ByUsage(canonicalQuantity(0.25, MeasurementUnit.KG))
             ),
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Salsa de tomate" }.id,
-                primaryMode = IngredientUsageMode.ByYield(6)
+                primaryMode = ByYield(6)
             ),
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Levadura" }.id,
-                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(6.667, MeasurementUnit.G))
+                primaryMode = ByUsage(canonicalQuantity(6.667, MeasurementUnit.G))
             ),
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Aceite" }.id,
-                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(8.333, MeasurementUnit.CC))
+                primaryMode = ByUsage(canonicalQuantity(8.333, MeasurementUnit.CC))
             ),
             RecipeIngredient(
                 recipeId = muzzarellaId,
                 ingredientId = ingredientes.first { it.name == "Sal" }.id,
-                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(4.167, MeasurementUnit.G))
+                primaryMode = ByUsage(canonicalQuantity(4.167, MeasurementUnit.G))
             )
         )
         recipeRepository.setIngredients(muzzarellaId, muzzarellaIngredients)

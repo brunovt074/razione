@@ -4,6 +4,8 @@ import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.model.AppSettings
 import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.domain.model.Ingredient
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
@@ -75,9 +77,9 @@ class CalculateRecipeCostUseCaseTest {
     )
 
     private val testRecipeIngredients = listOf(
-        RecipeIngredient(id = 1L, recipeId = 1L, ingredientId = 1L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.25, MeasurementUnit.KG))),
-        RecipeIngredient(id = 2L, recipeId = 1L, ingredientId = 2L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.25, MeasurementUnit.KG))),
-        RecipeIngredient(id = 3L, recipeId = 1L, ingredientId = 3L, primaryMode = IngredientUsageMode.ByUsage(countQty(0.15)))
+        RecipeIngredient(id = 1L, recipeId = 1L, ingredientId = 1L, primaryMode = ByUsage(massQty(0.25, MeasurementUnit.KG))),
+        RecipeIngredient(id = 2L, recipeId = 1L, ingredientId = 2L, primaryMode = ByUsage(massQty(0.25, MeasurementUnit.KG))),
+        RecipeIngredient(id = 3L, recipeId = 1L, ingredientId = 3L, primaryMode = ByUsage(countQty(0.15)))
     )
 
     private val fakeRecipeRepository = object : RecipeRepository {
@@ -205,12 +207,12 @@ class CalculateRecipeCostUseCaseTest {
 
         val muzzarela = Recipe(id = 1L, name = "Muzzarela", parentRecipeId = null, createdAt = 0, updatedAt = 0)
         val muzzarelaIngredients = listOf(
-            RecipeIngredient(recipeId = 1L, ingredientId = 1L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.3, MeasurementUnit.KG))),
-            RecipeIngredient(recipeId = 1L, ingredientId = 2L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.25, MeasurementUnit.KG))),
-            RecipeIngredient(recipeId = 1L, ingredientId = 3L, primaryMode = IngredientUsageMode.ByYield(6)),
-            RecipeIngredient(recipeId = 1L, ingredientId = 4L, primaryMode = IngredientUsageMode.ByUsage(massQty(6.667, MeasurementUnit.G))),
-            RecipeIngredient(recipeId = 1L, ingredientId = 5L, primaryMode = IngredientUsageMode.ByUsage(volumeQty(8.333, MeasurementUnit.CC))),
-            RecipeIngredient(recipeId = 1L, ingredientId = 6L, primaryMode = IngredientUsageMode.ByUsage(massQty(4.167, MeasurementUnit.G)))
+            RecipeIngredient(recipeId = 1L, ingredientId = 1L, primaryMode = ByUsage(massQty(0.3, MeasurementUnit.KG))),
+            RecipeIngredient(recipeId = 1L, ingredientId = 2L, primaryMode = ByUsage(massQty(0.25, MeasurementUnit.KG))),
+            RecipeIngredient(recipeId = 1L, ingredientId = 3L, primaryMode = ByYield(6)),
+            RecipeIngredient(recipeId = 1L, ingredientId = 4L, primaryMode = ByUsage(massQty(6.667, MeasurementUnit.G))),
+            RecipeIngredient(recipeId = 1L, ingredientId = 5L, primaryMode = ByUsage(volumeQty(8.333, MeasurementUnit.CC))),
+            RecipeIngredient(recipeId = 1L, ingredientId = 6L, primaryMode = ByUsage(massQty(4.167, MeasurementUnit.G)))
         )
 
         val repo = object : RecipeRepository {
@@ -278,7 +280,7 @@ class CalculateRecipeCostUseCaseTest {
         val fugazzetaIngredients = listOf(
             RecipeIngredient(
                 recipeId = 2L, ingredientId = 10L,
-                primaryMode = IngredientUsageMode.ByUsage(massQty(200.0, MeasurementUnit.G))
+                primaryMode = ByUsage(massQty(200.0, MeasurementUnit.G))
             )
         )
         val muzzarelaIngredients = emptyList<RecipeIngredient>()
@@ -340,13 +342,13 @@ class CalculateRecipeCostUseCaseTest {
         )
 
         val muzzarelaIngredients = listOf(
-            RecipeIngredient(id = 1L, recipeId = 1L, ingredientId = 1L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.25, MeasurementUnit.KG))),
-            RecipeIngredient(id = 2L, recipeId = 1L, ingredientId = 2L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.25, MeasurementUnit.KG))),
-            RecipeIngredient(id = 3L, recipeId = 1L, ingredientId = 3L, primaryMode = IngredientUsageMode.ByUsage(countQty(0.15)))
+            RecipeIngredient(id = 1L, recipeId = 1L, ingredientId = 1L, primaryMode = ByUsage(massQty(0.25, MeasurementUnit.KG))),
+            RecipeIngredient(id = 2L, recipeId = 1L, ingredientId = 2L, primaryMode = ByUsage(massQty(0.25, MeasurementUnit.KG))),
+            RecipeIngredient(id = 3L, recipeId = 1L, ingredientId = 3L, primaryMode = ByUsage(countQty(0.15)))
         )
 
         val fugazzetaOwnIngredients = listOf(
-            RecipeIngredient(id = 4L, recipeId = 7L, ingredientId = 4L, primaryMode = IngredientUsageMode.ByUsage(massQty(0.1, MeasurementUnit.KG)))
+            RecipeIngredient(id = 4L, recipeId = 7L, ingredientId = 4L, primaryMode = ByUsage(massQty(0.1, MeasurementUnit.KG)))
         )
 
         val recipeRepository = object : RecipeRepository {

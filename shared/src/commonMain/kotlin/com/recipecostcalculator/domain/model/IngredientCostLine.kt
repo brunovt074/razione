@@ -1,4 +1,4 @@
-package com.recipecostcalculator.costing.domain.model
+package com.recipecostcalculator.domain.model
 
 import com.recipecostcalculator.financial.domain.model.Money
 
@@ -8,5 +8,5 @@ data class IngredientCostLine(
     val usageDescription: String,
     val costPerPizza: Money,
     val isFromParentRecipe: Boolean,
-    val parentRecipeName: String?,
+    val parentRecipeName: String? = null
 )

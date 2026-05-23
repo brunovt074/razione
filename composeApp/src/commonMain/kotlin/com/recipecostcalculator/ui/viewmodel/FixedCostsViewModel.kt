@@ -44,10 +44,3 @@ class FixedCostsViewModel(
         _state.update { it.copy(error = null) }
     }
 }
-
-data class FixedCostsState(
-    val costs: List<FixedCost> = emptyList(),
-    val totalMonthly: Money = Money.ZERO,
-    val isLoading: Boolean = true,
-    val error: String? = null
-)

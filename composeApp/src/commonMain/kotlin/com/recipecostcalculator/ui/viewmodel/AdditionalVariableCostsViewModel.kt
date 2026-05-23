@@ -44,10 +44,3 @@ class AdditionalVariableCostsViewModel(
         _state.update { it.copy(error = null) }
     }
 }
-
-data class AdditionalVariableCostsState(
-    val costs: List<AdditionalVariableCost> = emptyList(),
-    val totalCost: Money = Money.ZERO,
-    val isLoading: Boolean = true,
-    val error: String? = null
-)

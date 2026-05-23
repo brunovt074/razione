@@ -1,28 +1,14 @@
 package com.recipecostcalculator.domain.service
 
-import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.model.CostBreakdown
 import com.recipecostcalculator.domain.model.IngredientCostLine
-import com.recipecostcalculator.domain.model.IngredientUsageMode
-import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.financial.domain.model.Money
-import com.recipecostcalculator.financial.domain.model.Percentage
 
 class RecipeCostCalculator(
     private val ingredientCostCalculator: IngredientCostCalculator,
 ) {
 
-    data class Input(
-        val recipe: Recipe,
-        val ancestorChain: List<Recipe>,
-        val ingredientMap: Map<Long, com.recipecostcalculator.domain.model.Ingredient>,
-        val additionalCosts: List<AdditionalVariableCost>,
-        val wasteFactor: Percentage,
-        val fixedCostPerUnit: Money,
-        val batchSize: Int,
-    )
-
-    fun calculate(input: Input): CostBreakdown {
+    fun calculate(input: RecipeCostCalculatorInput): CostBreakdown {
         val allLines = mutableListOf<IngredientCostLine>()
         var parentCost = Money.ZERO
         var ownCost = Money.ZERO

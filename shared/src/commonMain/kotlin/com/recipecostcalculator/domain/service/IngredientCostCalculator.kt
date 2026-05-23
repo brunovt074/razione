@@ -1,5 +1,7 @@
 package com.recipecostcalculator.domain.service
 
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.financial.domain.model.Money
@@ -13,11 +15,11 @@ class IngredientCostCalculator {
         wasteFactor: Percentage,
     ): Money {
         val baseCost = when (mode) {
-            is IngredientUsageMode.ByUsage -> {
+            is ByUsage -> {
                 val pricePerUnit = ingredient.purchasePrice / ingredient.contentAmount
                 pricePerUnit * mode.amountPerPizza.value
             }
-            is IngredientUsageMode.ByYield -> {
+            is ByYield -> {
                 ingredient.purchasePrice / mode.pizzasPerPurchaseUnit
             }
         }
@@ -29,9 +31,9 @@ class IngredientCostCalculator {
         mode: IngredientUsageMode,
         usageUnit: String,
     ): String = when (mode) {
-        is IngredientUsageMode.ByUsage ->
+        is ByUsage ->
             "${mode.amountPerPizza.value} $usageUnit"
-        is IngredientUsageMode.ByYield ->
+        is ByYield ->
             "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
     }
 }

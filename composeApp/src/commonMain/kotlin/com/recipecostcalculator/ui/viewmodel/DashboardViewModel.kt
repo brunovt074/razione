@@ -66,12 +66,3 @@ class DashboardViewModel(
     fun loadDashboard() = Unit
     fun onRefresh() = Unit
 }
-
-data class DashboardState(
-    val recipesWithCosts: List<CostBreakdown> = emptyList(),
-    val totalFixedCosts: Money = Money.ZERO,
-    val estimatedProduction: Int = 0,
-    val avgVariableCost: Money = Money.ZERO,
-    val avgTotalCost: Money = Money.ZERO,
-    val isLoading: Boolean = true
-)

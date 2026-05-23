@@ -73,10 +73,3 @@ class RecipesViewModel(
         _error.value = null
     }
 }
-
-data class RecipesState(
-    val recipes: List<Recipe> = emptyList(),
-    val costBreakdowns: Map<Long, CostBreakdown?> = emptyMap(),
-    val isLoading: Boolean = true,
-    val error: String? = null
-)

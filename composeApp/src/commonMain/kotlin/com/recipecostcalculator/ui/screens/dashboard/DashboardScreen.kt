@@ -55,25 +55,25 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 KPICard(
                     title = Dashboard.avgVariableCost,
                     value = "$${String.format("%.2f", state.avgVariableCost.amount)}",
-                    subtitle = "Por pizza"
+                    subtitle = Dashboard.perPizza
                 )
 
                 KPICard(
                     title = Dashboard.avgTotalCost,
                     value = "$${String.format("%.2f", state.avgTotalCost.amount)}",
-                    subtitle = "Incluye costos fijos"
+                    subtitle = Dashboard.includesFixedCosts
                 )
 
                 KPICard(
                     title = Dashboard.fixedCostsMonthly,
                     value = "$${String.format("%.2f", state.totalFixedCosts.amount)}",
-                    subtitle = "Total mensuales"
+                    subtitle = Dashboard.totalMonthly
                 )
 
                 KPICard(
                     title = Dashboard.estimatedProduction,
                     value = "${state.estimatedProduction}",
-                    subtitle = "Pizzas por mes"
+                    subtitle = Dashboard.pizzasPerMonth
                 )
 
                 Text(

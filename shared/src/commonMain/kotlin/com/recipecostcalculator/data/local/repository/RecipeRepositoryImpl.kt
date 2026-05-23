@@ -1,6 +1,8 @@
 package com.recipecostcalculator.data.local.repository
 
 import com.recipecostcalculator.db.PizzeriaDatabase
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
@@ -60,9 +62,9 @@ class RecipeRepositoryImpl(
             ?: MeasurementDimension.MASS
         val canonical = MeasurementUnit.canonicalFor(dimension)
         return when {
-            usagePerPizza != null -> IngredientUsageMode.ByUsage(Quantity(usagePerPizza, canonical))
-            yieldPizzas != null -> IngredientUsageMode.ByYield(yieldPizzas.toInt())
-            else -> IngredientUsageMode.ByYield(1)
+            usagePerPizza != null -> ByUsage(Quantity(usagePerPizza, canonical))
+            yieldPizzas != null -> ByYield(yieldPizzas.toInt())
+            else -> ByYield(1)
         }
     }
 
@@ -225,8 +227,8 @@ class RecipeRepositoryImpl(
 
     private fun usageModeToRowValues(mode: IngredientUsageMode): Pair<Double?, Long?> {
         return when (mode) {
-            is IngredientUsageMode.ByUsage -> Pair(mode.amountPerPizza.value, null)
-            is IngredientUsageMode.ByYield -> Pair(null, mode.pizzasPerPurchaseUnit.toLong())
+            is ByUsage -> Pair(mode.amountPerPizza.value, null)
+            is ByYield -> Pair(null, mode.pizzasPerPurchaseUnit.toLong())
         }
     }
 }

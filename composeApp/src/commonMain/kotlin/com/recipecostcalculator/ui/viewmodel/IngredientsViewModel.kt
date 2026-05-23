@@ -55,9 +55,3 @@ class IngredientsViewModel(
     }
 }
 
-data class IngredientsState(
-    val ingredients: List<Ingredient> = emptyList(),
-    val isLoading: Boolean = true,
-    val error: String? = null,
-    val searchQuery: String = ""
-)

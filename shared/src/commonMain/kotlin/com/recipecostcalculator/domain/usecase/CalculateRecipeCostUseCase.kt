@@ -1,5 +1,7 @@
 package com.recipecostcalculator.domain.usecase
 
+import com.recipecostcalculator.domain.model.ByUsage
+import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.CostBreakdown
 import com.recipecostcalculator.domain.model.IngredientCostLine
 import com.recipecostcalculator.domain.model.IngredientUsageMode
@@ -7,12 +9,11 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
 import com.recipecostcalculator.domain.repository.FixedCostRepository
-import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.IngredientRepository
+import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.financial.domain.model.Percentage
-import com.recipecostcalculator.financial.domain.model.Quantity
 
 class CalculateRecipeCostUseCase(
     private val recipeRepository: RecipeRepository,
@@ -101,20 +102,19 @@ class CalculateRecipeCostUseCase(
     ): Money {
         val pricePerUnit = ingredient.purchasePrice / ingredient.contentAmount
         val baseCost = when (ri.primaryMode) {
-            is IngredientUsageMode.ByUsage -> {
-                pricePerUnit * ri.primaryMode.amountPerPizza.value
-            }
-            is IngredientUsageMode.ByYield -> {
-                ingredient.purchasePrice / ri.primaryMode.pizzasPerPurchaseUnit
-            }
+            is ByUsage -> pricePerUnit * ri.primaryMode.amountPerPizza.value
+            is ByYield -> ingredient.purchasePrice / ri.primaryMode.pizzasPerPurchaseUnit
         }
         val wasteMultiplier = 1.0 + wasteFactor.value
         return baseCost * wasteMultiplier
     }
 
-    private fun formatUsage(ri: RecipeIngredient, ingredient: com.recipecostcalculator.domain.model.Ingredient): String = when (ri.primaryMode) {
-        is IngredientUsageMode.ByUsage -> {
-            val displayQty = ri.primaryMode.amountPerPizza.convertTo(ingredient.usageUnit)
+    private fun formatUsage(
+        ri: RecipeIngredient,
+        ingredient: com.recipecostcalculator.domain.model.Ingredient
+    ): String = when (val mode = ri.primaryMode) {
+        is ByUsage -> {
+            val displayQty = mode.amountPerPizza.convertTo(ingredient.usageUnit)
             val formatted = if (displayQty.value == displayQty.value.toLong().toDouble()) {
                 displayQty.value.toLong().toString()
             } else {
@@ -122,7 +122,7 @@ class CalculateRecipeCostUseCase(
             }
             "$formatted ${ingredient.usageUnit.label}"
         }
-        is IngredientUsageMode.ByYield -> "rinde ${ri.primaryMode.pizzasPerPurchaseUnit} pizzas"
+        is ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
     }
 
     companion object {
