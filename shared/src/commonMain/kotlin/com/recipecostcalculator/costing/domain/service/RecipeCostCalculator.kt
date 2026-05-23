@@ -36,7 +36,7 @@ class RecipeCostCalculator(
                 ingredientId = ri.ingredientId,
                 ingredientName = ingredient.name,
                 usageDescription = ingredientCostCalculator.formatUsageDescription(
-                    ri.primaryMode, ingredient.usageUnit
+                    ri.primaryMode, ingredient.usageUnit.label
                 ),
                 costPerPizza = cost,
                 isFromParentRecipe = false,
@@ -55,7 +55,7 @@ class RecipeCostCalculator(
                     ingredientId = ri.ingredientId,
                     ingredientName = ingredient.name,
                     usageDescription = ingredientCostCalculator.formatUsageDescription(
-                        ri.primaryMode, ingredient.usageUnit
+                        ri.primaryMode, ingredient.usageUnit.label
                     ),
                     costPerPizza = cost,
                     isFromParentRecipe = true,

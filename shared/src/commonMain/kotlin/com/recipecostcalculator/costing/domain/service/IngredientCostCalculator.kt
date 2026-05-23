@@ -13,8 +13,8 @@ class IngredientCostCalculator {
     ): Money {
         val baseCost = when (mode) {
             is IngredientUsageMode.ByUsage -> {
-                val pricePerUnit = ingredient.purchasePrice / ingredient.contentAmount.value
-                pricePerUnit * mode.amountPerPizza.value
+                val pricePerCanonical = ingredient.purchasePrice / ingredient.contentAmount.value
+                pricePerCanonical * mode.amountPerPizza.value
             }
             is IngredientUsageMode.ByYield -> {
                 ingredient.purchasePrice / mode.pizzasPerPurchaseUnit

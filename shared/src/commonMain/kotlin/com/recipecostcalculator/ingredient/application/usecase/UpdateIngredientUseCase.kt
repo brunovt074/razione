@@ -5,6 +5,7 @@ import com.recipecostcalculator.financial.domain.model.Quantity
 import com.recipecostcalculator.ingredient.application.command.IngredientCommand
 import com.recipecostcalculator.ingredient.domain.model.Ingredient
 import com.recipecostcalculator.ingredient.domain.repository.IngredientRepository
+import com.recipecostcalculator.measurement.MeasurementUnit
 import com.recipecostcalculator.util.currentTimeMillis
 
 class UpdateIngredientUseCase(
@@ -21,12 +22,16 @@ class UpdateIngredientUseCase(
         val existing = repository.findById(command.id!!)
             ?: error("Ingrediente ${command.id} no encontrado")
 
+        val purchaseUnit = MeasurementUnit.values().firstOrNull { it.name == command.purchaseUnit } ?: existing.purchaseUnit
+        val usageUnit = MeasurementUnit.values().firstOrNull { it.name == command.usageUnit } ?: existing.usageUnit
+
         val updated = existing.copy(
             name = command.name.trim(),
-            purchaseUnit = command.purchaseUnit,
+            dimension = purchaseUnit.dimension,
+            purchaseUnit = purchaseUnit,
             purchasePrice = Money.of(command.purchasePrice),
-            contentAmount = Quantity.of(command.contentAmount),
-            usageUnit = command.usageUnit,
+            contentAmount = Quantity(command.contentAmount, purchaseUnit),
+            usageUnit = usageUnit,
             updatedAt = currentTimeMillis(),
         )
         repository.save(updated)

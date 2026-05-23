@@ -37,7 +37,7 @@ class DashboardViewModel(
     ) { _, _, _, _, _ -> Unit }
     .flatMapLatest {
         flow {
-            val recipes = recipeRepository.getBaseRecipes()
+            val recipes = recipeRepository.getAllForDashboard()
             val totalFixed = fixedCostRepository.getTotalMonthly()
             val settings = settingsRepository.getSettings()
             val costs = recipes.mapNotNull { recipe ->

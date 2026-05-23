@@ -1,0 +1,2 @@
+ALTER TABLE ingredients ADD COLUMN dimension TEXT NOT NULL DEFAULT 'MASS';
+ALTER TABLE ingredients ADD COLUMN purchase_package_label TEXT;

@@ -1,7 +1,9 @@
 CREATE TABLE ingredients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    dimension TEXT NOT NULL DEFAULT 'MASS',
     purchase_unit TEXT NOT NULL,
+    purchase_package_label TEXT,
     purchase_price REAL NOT NULL,
     content_amount REAL NOT NULL,
     usage_unit TEXT NOT NULL,
@@ -18,15 +20,17 @@ selectById:
 SELECT * FROM ingredients WHERE id = :id;
 
 insert:
-INSERT INTO ingredients(name, purchase_unit, purchase_price, content_amount, usage_unit, is_active, updated_at)
-VALUES (:name, :purchaseUnit, :purchasePrice, :contentAmount, :usageUnit, 1, :updatedAt);
+INSERT INTO ingredients(name, dimension, purchase_unit, purchase_package_label, purchase_price, content_amount, usage_unit, is_active, updated_at)
+VALUES (:name, :dimension, :purchaseUnit, :purchasePackageLabel, :purchasePrice, :contentAmount, :usageUnit, 1, :updatedAt);
 
 updatePrice:
 UPDATE ingredients SET purchase_price = :price, updated_at = :updatedAt WHERE id = :id;
 
 updateAll:
 UPDATE ingredients
-SET name = :name, purchase_unit = :purchaseUnit, purchase_price = :purchasePrice,
+SET name = :name, dimension = :dimension, purchase_unit = :purchaseUnit,
+    purchase_package_label = :purchasePackageLabel,
+    purchase_price = :purchasePrice,
     content_amount = :contentAmount, usage_unit = :usageUnit, updated_at = :updatedAt
 WHERE id = :id;
 

@@ -5,6 +5,8 @@ import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementDimension
+import com.recipecostcalculator.measurement.MeasurementUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,18 +28,7 @@ class IngredientRepositoryImpl(
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeAll(): Flow<List<Ingredient>> = refreshSignal.flatMapLatest {
         kotlinx.coroutines.flow.flow {
-            val list = queries.selectAll().executeAsList().map { row ->
-                Ingredient(
-                    id = row.id,
-                    name = row.name,
-                    purchaseUnit = row.purchase_unit,
-                    purchasePrice = Money(row.purchase_price),
-                    contentAmount = Quantity(row.content_amount),
-                    usageUnit = row.usage_unit,
-                    isActive = row.is_active == 1L,
-                    updatedAt = row.updated_at
-                )
-            }
+            val list = queries.selectAll().executeAsList().map { row -> row.toIngredient() }
             emit(list)
         }
     }
@@ -48,44 +39,24 @@ class IngredientRepositoryImpl(
 
     override suspend fun getById(id: Long): Ingredient? =
         withContext(Dispatchers.IO) {
-            queries.selectById(id).executeAsOneOrNull()?.let { row ->
-                Ingredient(
-                    id = row.id,
-                    name = row.name,
-                    purchaseUnit = row.purchase_unit,
-                    purchasePrice = Money(row.purchase_price),
-                    contentAmount = Quantity(row.content_amount),
-                    usageUnit = row.usage_unit,
-                    isActive = row.is_active == 1L,
-                    updatedAt = row.updated_at
-                )
-            }
+            queries.selectById(id).executeAsOneOrNull()?.toIngredient()
         }
 
     override suspend fun getAllActive(): List<Ingredient> =
         withContext(Dispatchers.IO) {
-            queries.selectAll().executeAsList().map { row ->
-                Ingredient(
-                    id = row.id,
-                    name = row.name,
-                    purchaseUnit = row.purchase_unit,
-                    purchasePrice = Money(row.purchase_price),
-                    contentAmount = Quantity(row.content_amount),
-                    usageUnit = row.usage_unit,
-                    isActive = row.is_active == 1L,
-                    updatedAt = row.updated_at
-                )
-            }
+            queries.selectAll().executeAsList().map { row -> row.toIngredient() }
         }
 
     override suspend fun insert(ingredient: Ingredient): Long =
         withContext(Dispatchers.IO) {
             queries.insert(
                 name = ingredient.name,
-                purchaseUnit = ingredient.purchaseUnit,
+                dimension = ingredient.dimension.name,
+                purchaseUnit = ingredient.purchaseUnit.name,
+                purchasePackageLabel = ingredient.purchasePackageLabel,
                 purchasePrice = ingredient.purchasePrice.amount,
                 contentAmount = ingredient.contentAmount.value,
-                usageUnit = ingredient.usageUnit,
+                usageUnit = ingredient.usageUnit.name,
                 updatedAt = ingredient.updatedAt
             )
             queries.lastInsertId().executeAsOne().also { refresh() }
@@ -95,10 +66,12 @@ class IngredientRepositoryImpl(
         withContext(Dispatchers.IO) {
             queries.updateAll(
                 name = ingredient.name,
-                purchaseUnit = ingredient.purchaseUnit,
+                dimension = ingredient.dimension.name,
+                purchaseUnit = ingredient.purchaseUnit.name,
+                purchasePackageLabel = ingredient.purchasePackageLabel,
                 purchasePrice = ingredient.purchasePrice.amount,
                 contentAmount = ingredient.contentAmount.value,
-                usageUnit = ingredient.usageUnit,
+                usageUnit = ingredient.usageUnit.name,
                 updatedAt = System.currentTimeMillis(),
                 id = ingredient.id
             )
@@ -124,3 +97,27 @@ class IngredientRepositoryImpl(
             Unit
         }
 }
+
+private fun com.recipecostcalculator.db.Ingredients.toIngredient(): Ingredient {
+    val dimension = parseDimension(dimension)
+    val canonical = MeasurementUnit.canonicalFor(dimension)
+    return Ingredient(
+        id = id,
+        name = name,
+        dimension = dimension,
+        purchaseUnit = parseUnit(purchase_unit, dimension),
+        purchasePackageLabel = purchase_package_label,
+        purchasePrice = Money(purchase_price),
+        contentAmount = Quantity(content_amount, canonical),
+        usageUnit = parseUnit(usage_unit, dimension),
+        isActive = is_active == 1L,
+        updatedAt = updated_at,
+    )
+}
+
+private fun parseDimension(raw: String): MeasurementDimension =
+    MeasurementDimension.values().firstOrNull { it.name == raw } ?: MeasurementDimension.MASS
+
+private fun parseUnit(raw: String, dimension: MeasurementDimension): MeasurementUnit =
+    MeasurementUnit.values().firstOrNull { it.name == raw && it.dimension == dimension }
+        ?: MeasurementUnit.canonicalFor(dimension)

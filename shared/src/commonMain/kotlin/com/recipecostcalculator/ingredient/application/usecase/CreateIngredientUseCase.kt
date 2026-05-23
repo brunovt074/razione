@@ -5,6 +5,7 @@ import com.recipecostcalculator.financial.domain.model.Quantity
 import com.recipecostcalculator.ingredient.application.command.IngredientCommand
 import com.recipecostcalculator.ingredient.domain.model.Ingredient
 import com.recipecostcalculator.ingredient.domain.repository.IngredientRepository
+import com.recipecostcalculator.measurement.MeasurementUnit
 import com.recipecostcalculator.util.currentTimeMillis
 
 class CreateIngredientUseCase(
@@ -17,12 +18,16 @@ class CreateIngredientUseCase(
         require(command.purchasePrice > 0.0) { "El precio debe ser mayor a cero" }
         require(command.contentAmount > 0.0) { "El contenido debe ser mayor a cero" }
 
+        val purchaseUnit = MeasurementUnit.values().firstOrNull { it.name == command.purchaseUnit } ?: MeasurementUnit.KG
+        val usageUnit = MeasurementUnit.values().firstOrNull { it.name == command.usageUnit } ?: purchaseUnit
+
         val ingredient = Ingredient(
             name = command.name.trim(),
-            purchaseUnit = command.purchaseUnit,
+            dimension = purchaseUnit.dimension,
+            purchaseUnit = purchaseUnit,
             purchasePrice = Money.of(command.purchasePrice),
-            contentAmount = Quantity.of(command.contentAmount),
-            usageUnit = command.usageUnit,
+            contentAmount = Quantity(command.contentAmount, purchaseUnit),
+            usageUnit = usageUnit,
             updatedAt = currentTimeMillis(),
         )
         repository.save(ingredient)

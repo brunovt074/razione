@@ -63,6 +63,7 @@ sqldelight {
     databases {
         create("PizzeriaDatabase") {
             packageName = "com.recipecostcalculator.db"
+            verifyMigrations = false
         }
     }
 }

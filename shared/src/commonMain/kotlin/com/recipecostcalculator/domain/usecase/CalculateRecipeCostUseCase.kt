@@ -113,7 +113,15 @@ class CalculateRecipeCostUseCase(
     }
 
     private fun formatUsage(ri: RecipeIngredient, ingredient: com.recipecostcalculator.domain.model.Ingredient): String = when (ri.primaryMode) {
-        is IngredientUsageMode.ByUsage -> "${ri.primaryMode.amountPerPizza.value} ${ingredient.usageUnit}"
+        is IngredientUsageMode.ByUsage -> {
+            val displayQty = ri.primaryMode.amountPerPizza.convertTo(ingredient.usageUnit)
+            val formatted = if (displayQty.value == displayQty.value.toLong().toDouble()) {
+                displayQty.value.toLong().toString()
+            } else {
+                String.format("%.3f", displayQty.value).trimEnd('0').trimEnd('.')
+            }
+            "$formatted ${ingredient.usageUnit.label}"
+        }
         is IngredientUsageMode.ByYield -> "rinde ${ri.primaryMode.pizzasPerPurchaseUnit} pizzas"
     }
 

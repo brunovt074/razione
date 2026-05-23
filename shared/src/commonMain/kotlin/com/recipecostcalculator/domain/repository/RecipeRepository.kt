@@ -9,6 +9,7 @@ interface RecipeRepository {
     suspend fun getAll(): List<Recipe>
     suspend fun getById(id: Long): Recipe?
     suspend fun getBaseRecipes(): List<Recipe>
+    suspend fun getAllForDashboard(): List<Recipe>
     suspend fun getByParent(parentId: Long): List<Recipe>
     suspend fun insert(recipe: Recipe): Long
     suspend fun update(recipe: Recipe)

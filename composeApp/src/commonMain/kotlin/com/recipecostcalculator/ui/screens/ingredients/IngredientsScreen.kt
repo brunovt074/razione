@@ -47,12 +47,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementDimension
+import com.recipecostcalculator.measurement.MeasurementUnit
+import com.recipecostcalculator.measurement.UnitConverter
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.strings.es.Common
 import com.recipecostcalculator.ui.strings.es.Ingredients
-
-private val purchaseUnits = listOf("kg", "lt", "un")
-private val usageUnits = listOf("kg", "g", "lt", "cc", "un")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,6 +176,7 @@ private fun IngredientCard(
     onCardClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
+    val unitCost = ingredient.unitCost()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,13 +196,15 @@ private fun IngredientCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
+            ingredient.purchasePackageLabel?.let { label ->
+                Text(
+                    text = "$label — $${String.format("%.2f", ingredient.purchasePrice.amount)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = "${ingredient.contentAmount.value} ${ingredient.purchaseUnit}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "$${String.format("%.2f", ingredient.purchasePrice.amount)} / ${ingredient.purchaseUnit}",
+                text = "$${String.format("%.2f", unitCost.amount)} / ${ingredient.usageUnit.label}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -214,49 +217,6 @@ private fun IngredientCard(
     }
 }
 
-@Composable
-private fun PriceUpdateDialog(
-    currentPrice: Money,
-    onDismiss: () -> Unit,
-    onConfirm: (Money) -> Unit
-) {
-    var priceText by remember { mutableStateOf(currentPrice.amount.toString()) }
-    var error by remember { mutableStateOf(false) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(Ingredients.updatePrice) },
-        text = {
-            OutlinedTextField(
-                value = priceText,
-                onValueChange = { priceText = it; error = false },
-                label = { Text(Ingredients.price) },
-                prefix = { Text("$") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                isError = error,
-                supportingText = if (error) {{ Text(Ingredients.enterValidNumber) }} else null
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val newPriceAmount = priceText.toDoubleOrNull()
-                if (newPriceAmount != null && newPriceAmount > 0) {
-                    onConfirm(Money(newPriceAmount))
-                } else {
-                    error = true
-                }
-            }) {
-                Text(Common.accept)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(Common.cancel)
-            }
-        }
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientForm(
@@ -265,16 +225,28 @@ private fun IngredientForm(
     onCancel: () -> Unit
 ) {
     var name by remember { mutableStateOf(ingredient?.name ?: "") }
-    var purchaseUnit by remember { mutableStateOf(ingredient?.purchaseUnit ?: "kg") }
+    var dimension by remember { mutableStateOf(ingredient?.dimension ?: MeasurementDimension.MASS) }
+    var purchaseUnit by remember { mutableStateOf(ingredient?.purchaseUnit ?: MeasurementUnit.KG) }
+    var purchasePackageLabel by remember { mutableStateOf(ingredient?.purchasePackageLabel ?: "") }
     var purchasePrice by remember { mutableStateOf(ingredient?.purchasePrice?.amount?.toString() ?: "") }
-    var contentAmount by remember { mutableStateOf(ingredient?.contentAmount?.value?.toString() ?: "") }
-    var usageUnit by remember { mutableStateOf(ingredient?.usageUnit ?: "g") }
+    var contentAmountStr by remember {
+        mutableStateOf(
+            ingredient?.let {
+                val inPurchaseUnit = it.contentAmount.convertTo(it.purchaseUnit)
+                String.format("%.3f", inPurchaseUnit.value).trimEnd('0').trimEnd('.')
+            } ?: ""
+        )
+    }
+    var usageUnit by remember { mutableStateOf(ingredient?.usageUnit ?: MeasurementUnit.G) }
 
     var nameError by remember { mutableStateOf(false) }
     var purchasePriceError by remember { mutableStateOf(false) }
     var contentAmountError by remember { mutableStateOf(false) }
+    var dimensionExpanded by remember { mutableStateOf(false) }
     var purchaseUnitExpanded by remember { mutableStateOf(false) }
     var usageUnitExpanded by remember { mutableStateOf(false) }
+
+    val availableUnits = MeasurementUnit.unitsFor(dimension)
 
     Column(
         modifier = Modifier
@@ -298,11 +270,43 @@ private fun IngredientForm(
         )
 
         ExposedDropdownMenuBox(
+            expanded = dimensionExpanded,
+            onExpandedChange = { dimensionExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = dimensionLabel(dimension),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(Ingredients.dimension) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dimensionExpanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+            )
+            ExposedDropdownMenu(
+                expanded = dimensionExpanded,
+                onDismissRequest = { dimensionExpanded = false }
+            ) {
+                MeasurementDimension.values().forEach { dim ->
+                    DropdownMenuItem(
+                        text = { Text(dimensionLabel(dim)) },
+                        onClick = {
+                            dimension = dim
+                            purchaseUnit = MeasurementUnit.canonicalFor(dim)
+                            usageUnit = MeasurementUnit.canonicalFor(dim)
+                            dimensionExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        ExposedDropdownMenuBox(
             expanded = purchaseUnitExpanded,
             onExpandedChange = { purchaseUnitExpanded = it }
         ) {
             OutlinedTextField(
-                value = purchaseUnit,
+                value = purchaseUnit.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(Ingredients.purchaseUnit) },
@@ -315,14 +319,21 @@ private fun IngredientForm(
                 expanded = purchaseUnitExpanded,
                 onDismissRequest = { purchaseUnitExpanded = false }
             ) {
-                purchaseUnits.forEach { unit ->
+                availableUnits.forEach { unit ->
                     DropdownMenuItem(
-                        text = { Text(unit) },
+                        text = { Text(unit.label) },
                         onClick = { purchaseUnit = unit; purchaseUnitExpanded = false }
                     )
                 }
             }
         }
+
+        OutlinedTextField(
+            value = purchasePackageLabel,
+            onValueChange = { purchasePackageLabel = it },
+            label = { Text(Ingredients.purchasePackageLabel) },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         OutlinedTextField(
             value = purchasePrice,
@@ -336,9 +347,9 @@ private fun IngredientForm(
         )
 
         OutlinedTextField(
-            value = contentAmount,
-            onValueChange = { contentAmount = it; contentAmountError = false },
-            label = { Text(Ingredients.quantity) },
+            value = contentAmountStr,
+            onValueChange = { contentAmountStr = it; contentAmountError = false },
+            label = { Text("${Ingredients.quantity} (${purchaseUnit.label})") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = contentAmountError,
@@ -350,7 +361,7 @@ private fun IngredientForm(
             onExpandedChange = { usageUnitExpanded = it }
         ) {
             OutlinedTextField(
-                value = usageUnit,
+                value = usageUnit.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(Ingredients.usageUnit) },
@@ -363,9 +374,9 @@ private fun IngredientForm(
                 expanded = usageUnitExpanded,
                 onDismissRequest = { usageUnitExpanded = false }
             ) {
-                usageUnits.forEach { unit ->
+                availableUnits.forEach { unit ->
                     DropdownMenuItem(
-                        text = { Text(unit) },
+                        text = { Text(unit.label) },
                         onClick = { usageUnit = unit; usageUnitExpanded = false }
                     )
                 }
@@ -386,15 +397,20 @@ private fun IngredientForm(
                 onClick = {
                     nameError = name.isBlank()
                     purchasePriceError = purchasePrice.toDoubleOrNull() == null
-                    contentAmountError = contentAmount.toDoubleOrNull() == null
+                    contentAmountError = contentAmountStr.toDoubleOrNull() == null
 
                     if (!nameError && !purchasePriceError && !contentAmountError) {
+                        val contentInPurchaseUnit = contentAmountStr.toDouble()
+                        val canonical = MeasurementUnit.canonicalFor(dimension)
+                        val canonicalValue = UnitConverter.toCanonical(contentInPurchaseUnit, purchaseUnit)
                         val newIngredient = Ingredient(
                             id = ingredient?.id ?: 0,
                             name = name.trim(),
+                            dimension = dimension,
                             purchaseUnit = purchaseUnit,
+                            purchasePackageLabel = purchasePackageLabel.trim().ifBlank { null },
                             purchasePrice = Money(purchasePrice.toDouble()),
-                            contentAmount = Quantity(contentAmount.toDouble()),
+                            contentAmount = Quantity(canonicalValue, canonical),
                             usageUnit = usageUnit,
                             isActive = ingredient?.isActive ?: true,
                             updatedAt = System.currentTimeMillis()
@@ -410,4 +426,53 @@ private fun IngredientForm(
 
         Spacer(modifier = Modifier.height(32.dp))
     }
+}
+
+private fun dimensionLabel(dimension: MeasurementDimension): String = when (dimension) {
+    MeasurementDimension.MASS -> Ingredients.dimensionMass
+    MeasurementDimension.VOLUME -> Ingredients.dimensionVolume
+    MeasurementDimension.COUNT -> Ingredients.dimensionCount
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PriceUpdateDialog(
+    currentPrice: Money,
+    onDismiss: () -> Unit,
+    onConfirm: (Money) -> Unit
+) {
+    var priceStr by remember { mutableStateOf(currentPrice.amount.toString()) }
+    var priceError by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(Ingredients.updatePrice) },
+        text = {
+            OutlinedTextField(
+                value = priceStr,
+                onValueChange = { priceStr = it; priceError = false },
+                label = { Text(Ingredients.price) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                prefix = { Text("$") },
+                isError = priceError
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val amount = priceStr.toDoubleOrNull()
+                if (amount != null && amount > 0) {
+                    onConfirm(Money(amount))
+                } else {
+                    priceError = true
+                }
+            }) {
+                Text(Common.save)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(Common.cancel)
+            }
+        }
+    )
 }

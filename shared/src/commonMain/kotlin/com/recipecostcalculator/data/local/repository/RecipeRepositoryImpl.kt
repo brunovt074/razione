@@ -6,6 +6,8 @@ import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementDimension
+import com.recipecostcalculator.measurement.MeasurementUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -48,17 +50,19 @@ class RecipeRepositoryImpl(
                 id = row.id,
                 recipeId = row.recipe_id,
                 ingredientId = row.ingredient_id,
-                primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas),
+                primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas, row.dimension),
                 ingredient = null
             )
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun rowToUsageMode(usagePerPizza: Double?, yieldPizzas: Long?): IngredientUsageMode {
+    private fun rowToUsageMode(usagePerPizza: Double?, yieldPizzas: Long?, dimensionRaw: String): IngredientUsageMode {
+        val dimension = MeasurementDimension.values().firstOrNull { it.name == dimensionRaw }
+            ?: MeasurementDimension.MASS
+        val canonical = MeasurementUnit.canonicalFor(dimension)
         return when {
-            usagePerPizza != null -> IngredientUsageMode.ByUsage(Quantity(usagePerPizza))
+            usagePerPizza != null -> IngredientUsageMode.ByUsage(Quantity(usagePerPizza, canonical))
             yieldPizzas != null -> IngredientUsageMode.ByYield(yieldPizzas.toInt())
-            else -> IngredientUsageMode.ByUsage(Quantity(0.0))
+            else -> IngredientUsageMode.ByYield(1)
         }
     }
 
@@ -98,6 +102,20 @@ class RecipeRepositoryImpl(
     override suspend fun getBaseRecipes(): List<Recipe> =
         withContext(Dispatchers.IO) {
             queries.selectBaseRecipes().executeAsList().map { row ->
+                Recipe(
+                    id = row.id,
+                    name = row.name,
+                    parentRecipeId = row.parent_recipe_id,
+                    recipeIngredients = loadRecipeIngredients(row.id),
+                    createdAt = row.created_at,
+                    updatedAt = row.updated_at
+                )
+            }
+        }
+
+    override suspend fun getAllForDashboard(): List<Recipe> =
+        withContext(Dispatchers.IO) {
+            queries.selectAllForDashboard().executeAsList().map { row ->
                 Recipe(
                     id = row.id,
                     name = row.name,
@@ -176,7 +194,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     recipeId = row.recipe_id,
                     ingredientId = row.ingredient_id,
-                    primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas),
+                    primaryMode = rowToUsageMode(row.usage_per_pizza, row.yield_pizzas, row.dimension),
                     ingredient = null
                 )
             }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -46,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.Ingredient
@@ -53,6 +53,8 @@ import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementUnit
+import com.recipecostcalculator.measurement.UnitConverter
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -87,7 +89,7 @@ fun RecipeDetailScreen(
     var cycleError by remember { mutableStateOf(false) }
 
     var ownIngredients by remember { mutableStateOf<List<RecipeIngredient>>(emptyList()) }
-    var inheritedIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) }
+    var inheritedIngredients by remember { mutableStateOf<List<RecipeIngredient>>(emptyList()) }
 
     var ingredientToDelete by remember { mutableStateOf<RecipeIngredient?>(null) }
     var showIngredientSelector by remember { mutableStateOf(false) }
@@ -116,8 +118,8 @@ fun RecipeDetailScreen(
             recipe.parentRecipeId?.let { parentId ->
                 val parentRecipe = recipeRepository.getById(parentId)
                 inheritedIngredients = parentRecipe?.let { pr ->
-                    recipeRepository.getIngredients(pr.id).mapNotNull { ri ->
-                        availableIngredients.find { it.id == ri.ingredientId }
+                    recipeRepository.getIngredients(pr.id).map { ri ->
+                        ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
                     }
                 } ?: emptyList()
             } ?: run {
@@ -131,8 +133,8 @@ fun RecipeDetailScreen(
         if (pid != null && availableIngredients.isNotEmpty()) {
             val parentRecipe = recipeRepository.getById(pid)
             inheritedIngredients = parentRecipe?.let { pr ->
-                recipeRepository.getIngredients(pr.id).mapNotNull { ri ->
-                    availableIngredients.find { it.id == ri.ingredientId }
+                recipeRepository.getIngredients(pr.id).map { ri ->
+                    ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
                 }
             } ?: emptyList()
         } else {
@@ -276,18 +278,18 @@ fun RecipeDetailScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp)
-                        ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
                             Text(
                                 text = Recipes.inheritedIngredients,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            inheritedIngredients.forEach { ingredient ->
+                            inheritedIngredients.forEach { ri ->
+                                val ingredientName = ri.ingredient?.name ?: "ID: ${ri.ingredientId}"
+                                val usageDesc = formatUsageForDisplay(ri)
                                 Text(
-                                    text = "• ${ingredient.name} (${ingredient.contentAmount.value} ${ingredient.usageUnit})",
+                                    text = "• $ingredientName ($usageDesc)",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -296,10 +298,10 @@ fun RecipeDetailScreen(
                 }
 
                 Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showIngredientSelector = true }
-            ) {
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showIngredientSelector = true }
+                ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
                             text = Recipes.ownIngredientsHint,
@@ -321,13 +323,9 @@ fun RecipeDetailScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    val ingredientName = ri.ingredient?.name ?: "ID: ${ri.ingredientId}"
                                     Text(
-                                        text = "${ri.ingredient?.name ?: "ID: ${ri.ingredientId}"} - ${
-                                            when (val mode = ri.primaryMode) {
-                                                is IngredientUsageMode.ByUsage -> "${mode.amountPerPizza.value} ${ri.ingredient?.usageUnit ?: ""}"
-                                                is IngredientUsageMode.ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
-                                            }
-                                        }",
+                                        text = "$ingredientName - ${formatUsageForDisplay(ri)}",
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     IconButton(onClick = { ingredientToDelete = ri }) {
@@ -390,13 +388,12 @@ fun RecipeDetailScreen(
     if (showIngredientSelector) {
         IngredientSelectorBottomSheet(
             availableIngredients = availableIngredients,
-            onIngredientSelected = { ingredient: Ingredient, usageAmount: Double? ->
+            onIngredientSelected = { ingredient, canonicalQuantity ->
                 val recipeIdValue = recipeId ?: 0L
-                val usageValue = usageAmount ?: 0.0
                 ownIngredients = ownIngredients + RecipeIngredient(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
-                    primaryMode = IngredientUsageMode.ByUsage(Quantity(usageValue)),
+                    primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity),
                     ingredient = ingredient
                 )
                 showIngredientSelector = false
@@ -406,16 +403,39 @@ fun RecipeDetailScreen(
     }
 }
 
+@Suppress("DefaultLocale")
+private fun formatUsageForDisplay(ri: RecipeIngredient): String {
+    val ingredient = ri.ingredient
+    return when (val mode = ri.primaryMode) {
+        is IngredientUsageMode.ByUsage -> {
+            if (ingredient != null) {
+                val displayQty = mode.amountPerPizza.convertTo(ingredient.usageUnit)
+                val formatted = if (displayQty.value == displayQty.value.toLong().toDouble()) {
+                    displayQty.value.toLong().toString()
+                } else {
+                    String.format("%.3f", displayQty.value).trimEnd('0').trimEnd('.')
+                }
+                "$formatted ${ingredient.usageUnit.label}"
+            } else {
+                "${mode.amountPerPizza.value} ${mode.amountPerPizza.unit.label}"
+            }
+        }
+        is IngredientUsageMode.ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientSelectorBottomSheet(
     availableIngredients: List<Ingredient>,
-    onIngredientSelected: (Ingredient, Double?) -> Unit,
+    onIngredientSelected: (Ingredient, Quantity) -> Unit,
     onDismiss: () -> Unit
 ) {
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var usageAmount by remember { mutableStateOf("") }
+    var selectedUnit by remember { mutableStateOf<MeasurementUnit?>(null) }
     var ingredientExpanded by remember { mutableStateOf(false) }
+    var unitExpanded by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -457,6 +477,8 @@ private fun IngredientSelectorBottomSheet(
                             text = { Text(ingredient.name) },
                             onClick = {
                                 selectedIngredient = ingredient
+                                selectedUnit = ingredient.usageUnit
+                                usageAmount = ""
                                 ingredientExpanded = false
                             }
                         )
@@ -465,12 +487,48 @@ private fun IngredientSelectorBottomSheet(
             }
 
             selectedIngredient?.let { ingredient ->
-                OutlinedTextField(
-                    value = usageAmount,
-                    onValueChange = { usageAmount = it },
-                    label = { Text("${Ingredients.quantity} (${ingredient.usageUnit})") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                val availableUnits = MeasurementUnit.unitsFor(ingredient.dimension)
+                val currentUnit = selectedUnit ?: ingredient.usageUnit
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = usageAmount,
+                        onValueChange = { usageAmount = it },
+                        label = { Text(Ingredients.quantity) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = unitExpanded,
+                        onExpandedChange = { unitExpanded = it },
+                        modifier = Modifier.weight(0.6f)
+                    ) {
+                        OutlinedTextField(
+                            value = currentUnit.label,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = unitExpanded,
+                            onDismissRequest = { unitExpanded = false }
+                        ) {
+                            availableUnits.forEach { unit ->
+                                DropdownMenuItem(
+                                    text = { Text(unit.label) },
+                                    onClick = { selectedUnit = unit; unitExpanded = false }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             Row(
@@ -485,15 +543,17 @@ private fun IngredientSelectorBottomSheet(
                 }
                 Button(
                     onClick = {
-                        selectedIngredient?.let { ingredient ->
-                            val amount = usageAmount.toDoubleOrNull()
-                            if (amount != null && amount > 0) {
-                                onIngredientSelected(ingredient, amount)
-                            }
+                        val ingredient = selectedIngredient
+                        val amount = usageAmount.toDoubleOrNull()
+                        val unit = selectedUnit
+                        if (ingredient != null && amount != null && amount > 0 && unit != null) {
+                            val canonicalValue = UnitConverter.toCanonical(amount, unit)
+                            val canonical = MeasurementUnit.canonicalFor(ingredient.dimension)
+                            onIngredientSelected(ingredient, Quantity(canonicalValue, canonical))
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = selectedIngredient != null && usageAmount.toDoubleOrNull() != null
+                    enabled = selectedIngredient != null && (usageAmount.toDoubleOrNull() ?: 0.0) > 0
                 ) {
                     Text(Common.add)
                 }

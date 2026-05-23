@@ -13,7 +13,7 @@ CREATE TABLE recipe_ingredients (
 
 selectByRecipe:
 SELECT ri.*, i.name AS ingredient_name, i.purchase_unit, i.purchase_price,
-       i.content_amount, i.usage_unit
+       i.content_amount, i.usage_unit, i.dimension
 FROM recipe_ingredients ri
 JOIN ingredients i ON ri.ingredient_id = i.id
 WHERE ri.recipe_id = :recipeId;

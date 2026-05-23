@@ -12,6 +12,9 @@ import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.financial.domain.model.Money
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementDimension
+import com.recipecostcalculator.measurement.MeasurementUnit
+import com.recipecostcalculator.measurement.UnitConverter
 import kotlinx.coroutines.flow.first
 
 class DatabaseSeeder(
@@ -21,7 +24,7 @@ class DatabaseSeeder(
     private val settingsRepository: SettingsRepository
 ) {
     companion object {
-        private const val CURRENT_SEED_VERSION = 2
+        private const val CURRENT_SEED_VERSION = 3
     }
 
     suspend fun seedIfNeeded() {
@@ -43,15 +46,74 @@ class DatabaseSeeder(
         ingredientRepository.observeAll().first().forEach { ingredientRepository.delete(it.id) }
     }
 
+    private fun canonicalQuantity(amount: Double, inputUnit: MeasurementUnit): Quantity {
+        val canonical = MeasurementUnit.canonicalFor(inputUnit.dimension)
+        val canonicalValue = UnitConverter.toCanonical(amount, inputUnit)
+        return Quantity(canonicalValue, canonical)
+    }
+
     private suspend fun seedIngredients() {
         val now = System.currentTimeMillis()
         val ingredients = listOf(
-            Ingredient(name = "Harina", purchaseUnit = "Bolsa 25kg", purchasePrice = Money(18500.0), contentAmount = Quantity(25.0), usageUnit = "Kg", updatedAt = now),
-            Ingredient(name = "Mozzarella", purchaseUnit = "Kg", purchasePrice = Money(9300.0), contentAmount = Quantity(1.0), usageUnit = "Kg", updatedAt = now),
-            Ingredient(name = "Salsa de tomate", purchaseUnit = "Lata", purchasePrice = Money(930.0), contentAmount = Quantity(1.0), usageUnit = "Lata", updatedAt = now),
-            Ingredient(name = "Levadura", purchaseUnit = "Bolsa 500g", purchasePrice = Money(3800.0), contentAmount = Quantity(500.0), usageUnit = "g", updatedAt = now),
-            Ingredient(name = "Aceite", purchaseUnit = "Botella 900cc", purchasePrice = Money(3000.0), contentAmount = Quantity(900.0), usageUnit = "cc", updatedAt = now),
-            Ingredient(name = "Sal", purchaseUnit = "Paquete 500g", purchasePrice = Money(930.0), contentAmount = Quantity(500.0), usageUnit = "g", updatedAt = now)
+            Ingredient(
+                name = "Harina",
+                dimension = MeasurementDimension.MASS,
+                purchaseUnit = MeasurementUnit.KG,
+                purchasePackageLabel = "Bolsa 25kg",
+                purchasePrice = Money(18500.0),
+                contentAmount = canonicalQuantity(25.0, MeasurementUnit.KG),
+                usageUnit = MeasurementUnit.KG,
+                updatedAt = now
+            ),
+            Ingredient(
+                name = "Mozzarella",
+                dimension = MeasurementDimension.MASS,
+                purchaseUnit = MeasurementUnit.KG,
+                purchasePrice = Money(9300.0),
+                contentAmount = canonicalQuantity(1.0, MeasurementUnit.KG),
+                usageUnit = MeasurementUnit.KG,
+                updatedAt = now
+            ),
+            Ingredient(
+                name = "Salsa de tomate",
+                dimension = MeasurementDimension.COUNT,
+                purchaseUnit = MeasurementUnit.UN,
+                purchasePackageLabel = "Lata",
+                purchasePrice = Money(930.0),
+                contentAmount = canonicalQuantity(1.0, MeasurementUnit.UN),
+                usageUnit = MeasurementUnit.UN,
+                updatedAt = now
+            ),
+            Ingredient(
+                name = "Levadura",
+                dimension = MeasurementDimension.MASS,
+                purchaseUnit = MeasurementUnit.G,
+                purchasePackageLabel = "Bolsa 500g",
+                purchasePrice = Money(3800.0),
+                contentAmount = canonicalQuantity(500.0, MeasurementUnit.G),
+                usageUnit = MeasurementUnit.G,
+                updatedAt = now
+            ),
+            Ingredient(
+                name = "Aceite",
+                dimension = MeasurementDimension.VOLUME,
+                purchaseUnit = MeasurementUnit.CC,
+                purchasePackageLabel = "Botella 900cc",
+                purchasePrice = Money(3000.0),
+                contentAmount = canonicalQuantity(900.0, MeasurementUnit.CC),
+                usageUnit = MeasurementUnit.CC,
+                updatedAt = now
+            ),
+            Ingredient(
+                name = "Sal",
+                dimension = MeasurementDimension.MASS,
+                purchaseUnit = MeasurementUnit.G,
+                purchasePackageLabel = "Paquete 500g",
+                purchasePrice = Money(930.0),
+                contentAmount = canonicalQuantity(500.0, MeasurementUnit.G),
+                usageUnit = MeasurementUnit.G,
+                updatedAt = now
+            )
         )
         ingredients.forEach { ingredientRepository.insert(it) }
     }
@@ -64,12 +126,36 @@ class DatabaseSeeder(
         val ingredientes = ingredientRepository.observeAll().first()
 
         val muzzarellaIngredients = listOf(
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Harina" }.id, primaryMode = IngredientUsageMode.ByUsage(Quantity(0.3))),
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Mozzarella" }.id, primaryMode = IngredientUsageMode.ByUsage(Quantity(0.25))),
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Salsa de tomate" }.id, primaryMode = IngredientUsageMode.ByYield(6)),
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Levadura" }.id, primaryMode = IngredientUsageMode.ByUsage(Quantity(6.667))),
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Aceite" }.id, primaryMode = IngredientUsageMode.ByUsage(Quantity(8.333))),
-            RecipeIngredient(recipeId = muzzarellaId, ingredientId = ingredientes.first { it.name == "Sal" }.id, primaryMode = IngredientUsageMode.ByUsage(Quantity(4.167)))
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Harina" }.id,
+                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(0.3, MeasurementUnit.KG))
+            ),
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Mozzarella" }.id,
+                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(0.25, MeasurementUnit.KG))
+            ),
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Salsa de tomate" }.id,
+                primaryMode = IngredientUsageMode.ByYield(6)
+            ),
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Levadura" }.id,
+                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(6.667, MeasurementUnit.G))
+            ),
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Aceite" }.id,
+                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(8.333, MeasurementUnit.CC))
+            ),
+            RecipeIngredient(
+                recipeId = muzzarellaId,
+                ingredientId = ingredientes.first { it.name == "Sal" }.id,
+                primaryMode = IngredientUsageMode.ByUsage(canonicalQuantity(4.167, MeasurementUnit.G))
+            )
         )
         recipeRepository.setIngredients(muzzarellaId, muzzarellaIngredients)
     }
