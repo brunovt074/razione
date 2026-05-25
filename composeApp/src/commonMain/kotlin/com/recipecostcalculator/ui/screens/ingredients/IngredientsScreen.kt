@@ -217,6 +217,7 @@ private fun IngredientCard(
     }
 }
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientForm(

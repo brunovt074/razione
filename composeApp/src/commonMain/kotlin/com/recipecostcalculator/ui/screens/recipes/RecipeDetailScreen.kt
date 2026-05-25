@@ -51,7 +51,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.Ingredient
-import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.financial.domain.model.Quantity
@@ -306,14 +305,14 @@ fun RecipeDetailScreen(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = Recipes.ownIngredientsHint,
+                            text = Recipes.ownIngredients,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold
                         )
 
                         if (ownIngredients.isEmpty()) {
                             Text(
-                                text = Recipes.noIngredientsHint,
+                                text = Recipes.noIngredients,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(vertical = 8.dp)

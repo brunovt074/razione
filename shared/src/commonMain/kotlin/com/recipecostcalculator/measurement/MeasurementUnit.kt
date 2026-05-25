@@ -20,11 +20,11 @@ enum class MeasurementUnit(
         }
 
         fun unitsFor(dimension: MeasurementDimension): List<MeasurementUnit> =
-            values().filter { it.dimension == dimension }
+            entries.filter { it.dimension == dimension }
 
         fun fromLabel(label: String): MeasurementUnit =
-            values().firstOrNull { it.label == label }
-                ?: values().firstOrNull { it.name.lowercase() == label.lowercase() }
+            entries.firstOrNull { it.label == label }
+                ?: entries.firstOrNull { it.name.equals(label, ignoreCase = true) }
                 ?: KG
     }
 }

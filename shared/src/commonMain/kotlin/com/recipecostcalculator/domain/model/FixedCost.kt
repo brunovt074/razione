@@ -1,7 +1,7 @@
 package com.recipecostcalculator.domain.model
 
 import com.recipecostcalculator.financial.domain.model.Money
-// REFACTOR
+
 data class FixedCost(
     val id: Long = 0,
     val concept: String,

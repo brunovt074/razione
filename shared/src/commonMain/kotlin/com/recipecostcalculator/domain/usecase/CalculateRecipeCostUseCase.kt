@@ -4,7 +4,6 @@ import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.CostBreakdown
 import com.recipecostcalculator.domain.model.IngredientCostLine
-import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
@@ -66,8 +65,7 @@ class CalculateRecipeCostUseCase(
         val estProduction = settings.estimatedMonthlyProduction
         val fixedPerUnit = if (estProduction > 0) totalFixedMonthly / estProduction else Money.ZERO
 
-        val totalVariableCost = totalVariable
-        val totalCostPerUnit = totalVariableCost + fixedPerUnit
+        val totalCostPerUnit = totalVariable + fixedPerUnit
         val batchCost = totalVariable * settings.batchSize
 
         CostBreakdown(
@@ -77,7 +75,7 @@ class CalculateRecipeCostUseCase(
             ingredientCostOwn = ownCost,
             totalIngredientCost = totalIngredientCost,
             additionalVariableCost = totalAdditional,
-            totalVariableCost = totalVariableCost,
+            totalVariableCost = totalVariable,
             fixedCostPerUnit = fixedPerUnit,
             totalCostPerUnit = totalCostPerUnit,
             batchCost = batchCost,
@@ -109,6 +107,7 @@ class CalculateRecipeCostUseCase(
         return baseCost * wasteMultiplier
     }
 
+    @Suppress("DefaultLocale")
     private fun formatUsage(
         ri: RecipeIngredient,
         ingredient: com.recipecostcalculator.domain.model.Ingredient
