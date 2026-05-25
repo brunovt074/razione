@@ -196,7 +196,7 @@ private fun IngredientCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
-            ingredient.purchasePackageLabel?.let { label ->
+            ingredient.details?.let { label ->
                 Text(
                     text = "$label — $${String.format("%.2f", ingredient.purchasePrice.amount)}",
                     style = MaterialTheme.typography.bodySmall,
@@ -228,7 +228,7 @@ private fun IngredientForm(
     var name by remember { mutableStateOf(ingredient?.name ?: "") }
     var dimension by remember { mutableStateOf(ingredient?.dimension ?: MeasurementDimension.MASS) }
     var purchaseUnit by remember { mutableStateOf(ingredient?.purchaseUnit ?: MeasurementUnit.KG) }
-    var purchasePackageLabel by remember { mutableStateOf(ingredient?.purchasePackageLabel ?: "") }
+    var purchasePackageLabel by remember { mutableStateOf(ingredient?.details ?: "") }
     var purchasePrice by remember { mutableStateOf(ingredient?.purchasePrice?.amount?.toString() ?: "") }
     var contentAmountStr by remember {
         mutableStateOf(
@@ -330,13 +330,6 @@ private fun IngredientForm(
         }
 
         OutlinedTextField(
-            value = purchasePackageLabel,
-            onValueChange = { purchasePackageLabel = it },
-            label = { Text(Ingredients.purchasePackageLabel) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
             value = purchasePrice,
             onValueChange = { purchasePrice = it; purchasePriceError = false },
             label = { Text(Ingredients.purchasePrice) },
@@ -384,6 +377,13 @@ private fun IngredientForm(
             }
         }
 
+        OutlinedTextField(
+            value = purchasePackageLabel,
+            onValueChange = { purchasePackageLabel = it },
+            label = { Text(Ingredients.purchasePackageLabel) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -409,7 +409,7 @@ private fun IngredientForm(
                             name = name.trim(),
                             dimension = dimension,
                             purchaseUnit = purchaseUnit,
-                            purchasePackageLabel = purchasePackageLabel.trim().ifBlank { null },
+                            details = purchasePackageLabel.trim().ifBlank { null },
                             purchasePrice = Money(purchasePrice.toDouble()),
                             contentAmount = Quantity(canonicalValue, canonical),
                             usageUnit = usageUnit,

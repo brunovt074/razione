@@ -69,20 +69,6 @@ fun RecipesScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = includeFixedCosts,
-                    onCheckedChange = { includeFixedCosts = it }
-                )
-                Text(
-                    text = Recipes.includeFixedCosts,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
             if (state.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -109,6 +95,19 @@ fun RecipesScreen(
                         )
                     }
                 }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = includeFixedCosts,
+                    onCheckedChange = { includeFixedCosts = it }
+                )
+                Text(
+                    text = Recipes.includeFixedCosts,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }

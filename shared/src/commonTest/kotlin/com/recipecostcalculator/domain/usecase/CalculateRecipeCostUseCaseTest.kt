@@ -6,7 +6,6 @@ import com.recipecostcalculator.domain.model.FixedCost
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
-import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.model.SettingKey
@@ -153,7 +152,7 @@ class CalculateRecipeCostUseCaseTest {
             id = 1L, name = "Harina",
             dimension = MeasurementDimension.MASS,
             purchaseUnit = MeasurementUnit.KG,
-            purchasePackageLabel = "Bolsa 25kg",
+            details = "Bolsa 25kg",
             purchasePrice = Money(18500.0),
             contentAmount = massQty(25.0, MeasurementUnit.KG),
             usageUnit = MeasurementUnit.KG
@@ -170,7 +169,7 @@ class CalculateRecipeCostUseCaseTest {
             id = 3L, name = "Salsa",
             dimension = MeasurementDimension.COUNT,
             purchaseUnit = MeasurementUnit.UN,
-            purchasePackageLabel = "Lata",
+            details = "Lata",
             purchasePrice = Money(930.0),
             contentAmount = countQty(1.0),
             usageUnit = MeasurementUnit.UN
@@ -179,7 +178,7 @@ class CalculateRecipeCostUseCaseTest {
             id = 4L, name = "Levadura",
             dimension = MeasurementDimension.MASS,
             purchaseUnit = MeasurementUnit.G,
-            purchasePackageLabel = "Bolsa 500g",
+            details = "Bolsa 500g",
             purchasePrice = Money(3800.0),
             contentAmount = massQty(500.0, MeasurementUnit.G),
             usageUnit = MeasurementUnit.G
@@ -188,7 +187,7 @@ class CalculateRecipeCostUseCaseTest {
             id = 5L, name = "Aceite",
             dimension = MeasurementDimension.VOLUME,
             purchaseUnit = MeasurementUnit.CC,
-            purchasePackageLabel = "Botella 900cc",
+            details = "Botella 900cc",
             purchasePrice = Money(3000.0),
             contentAmount = volumeQty(900.0, MeasurementUnit.CC),
             usageUnit = MeasurementUnit.CC
@@ -197,7 +196,7 @@ class CalculateRecipeCostUseCaseTest {
             id = 6L, name = "Sal",
             dimension = MeasurementDimension.MASS,
             purchaseUnit = MeasurementUnit.G,
-            purchasePackageLabel = "Paquete 500g",
+            details = "Paquete 500g",
             purchasePrice = Money(930.0),
             contentAmount = massQty(500.0, MeasurementUnit.G),
             usageUnit = MeasurementUnit.G

@@ -5,7 +5,6 @@ import com.recipecostcalculator.domain.model.AppSettings
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
-import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
@@ -61,7 +60,7 @@ class DatabaseSeeder(
                 name = "Harina",
                 dimension = MeasurementDimension.MASS,
                 purchaseUnit = MeasurementUnit.KG,
-                purchasePackageLabel = "Bolsa 25kg",
+                details = "Bolsa 25kg",
                 purchasePrice = Money(18500.0),
                 contentAmount = canonicalQuantity(25.0, MeasurementUnit.KG),
                 usageUnit = MeasurementUnit.KG,
@@ -80,7 +79,7 @@ class DatabaseSeeder(
                 name = "Salsa de tomate",
                 dimension = MeasurementDimension.COUNT,
                 purchaseUnit = MeasurementUnit.UN,
-                purchasePackageLabel = "Lata",
+                details = "Lata",
                 purchasePrice = Money(930.0),
                 contentAmount = canonicalQuantity(1.0, MeasurementUnit.UN),
                 usageUnit = MeasurementUnit.UN,
@@ -90,7 +89,7 @@ class DatabaseSeeder(
                 name = "Levadura",
                 dimension = MeasurementDimension.MASS,
                 purchaseUnit = MeasurementUnit.G,
-                purchasePackageLabel = "Bolsa 500g",
+                details = "Bolsa 500g",
                 purchasePrice = Money(3800.0),
                 contentAmount = canonicalQuantity(500.0, MeasurementUnit.G),
                 usageUnit = MeasurementUnit.G,
@@ -100,7 +99,7 @@ class DatabaseSeeder(
                 name = "Aceite",
                 dimension = MeasurementDimension.VOLUME,
                 purchaseUnit = MeasurementUnit.CC,
-                purchasePackageLabel = "Botella 900cc",
+                details = "Botella 900cc",
                 purchasePrice = Money(3000.0),
                 contentAmount = canonicalQuantity(900.0, MeasurementUnit.CC),
                 usageUnit = MeasurementUnit.CC,
@@ -110,7 +109,7 @@ class DatabaseSeeder(
                 name = "Sal",
                 dimension = MeasurementDimension.MASS,
                 purchaseUnit = MeasurementUnit.G,
-                purchasePackageLabel = "Paquete 500g",
+                details = "Paquete 500g",
                 purchasePrice = Money(930.0),
                 contentAmount = canonicalQuantity(500.0, MeasurementUnit.G),
                 usageUnit = MeasurementUnit.G,

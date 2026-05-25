@@ -10,7 +10,7 @@ data class Ingredient(
     val name: String,
     val dimension: MeasurementDimension,
     val purchaseUnit: MeasurementUnit,
-    val purchasePackageLabel: String? = null,
+    val details: String? = null,
     val purchasePrice: Money,
     val contentAmount: Quantity,
     val usageUnit: MeasurementUnit,
