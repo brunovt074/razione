@@ -65,6 +65,7 @@ import com.recipecostcalculator.ui.strings.es.Ingredients
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailScreen(
@@ -117,12 +118,7 @@ fun RecipeDetailScreen(
                 ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
             }
             recipe.parentRecipeId?.let { parentId ->
-                val parentRecipe = recipeRepository.getById(parentId)
-                inheritedIngredients = parentRecipe?.let { pr ->
-                    recipeRepository.getIngredients(pr.id).map { ri ->
-                        ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
-                    }
-                } ?: emptyList()
+                inheritedIngredients = collectAllBaseIngredients(parentId, availableIngredients, recipeRepository)
             } ?: run {
                 inheritedIngredients = emptyList()
             }
@@ -132,12 +128,7 @@ fun RecipeDetailScreen(
     LaunchedEffect(parentRecipeId, availableIngredients) {
         val pid = parentRecipeId
         if (pid != null && availableIngredients.isNotEmpty()) {
-            val parentRecipe = recipeRepository.getById(pid)
-            inheritedIngredients = parentRecipe?.let { pr ->
-                recipeRepository.getIngredients(pr.id).map { ri ->
-                    ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
-                }
-            } ?: emptyList()
+            inheritedIngredients = collectAllBaseIngredients(pid, availableIngredients, recipeRepository)
         } else {
             inheritedIngredients = emptyList()
         }
@@ -289,8 +280,10 @@ fun RecipeDetailScreen(
                             inheritedIngredients.forEach { ri ->
                                 val ingredientName = ri.ingredient?.name ?: "ID: ${ri.ingredientId}"
                                 val usageDesc = formatUsageForDisplay(ri)
+                                val cost = computeUsageCost(ri)
+                                val costStr = if (cost != null) " | $${String.format("%.2f", cost)}" else ""
                                 Text(
-                                    text = "• $ingredientName ($usageDesc)",
+                                    text = "• $ingredientName | $usageDesc$costStr",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -325,9 +318,12 @@ fun RecipeDetailScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     val ingredientName = ri.ingredient?.name ?: "ID: ${ri.ingredientId}"
+                                    val cost = computeUsageCost(ri)
+                                    val costStr = if (cost != null) " | $${String.format("%.2f", cost)}" else ""
                                     Text(
-                                        text = "$ingredientName - ${formatUsageForDisplay(ri)}",
-                                        style = MaterialTheme.typography.bodyMedium
+                                        text = "$ingredientName | ${formatUsageForDisplay(ri)}$costStr",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
                                     )
                                     IconButton(onClick = { ingredientToDelete = ri }) {
                                         Text(
@@ -493,7 +489,8 @@ private fun IngredientSelectorBottomSheet(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
                         value = usageAmount,
@@ -512,6 +509,7 @@ private fun IngredientSelectorBottomSheet(
                             value = currentUnit.label,
                             onValueChange = {},
                             readOnly = true,
+                            label = { Text(Ingredients.usageUnit) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -574,4 +572,33 @@ private suspend fun hasCycle(recipe: Recipe, recipeRepository: RecipeRepository)
         currentId = recipeRepository.getById(currentId)?.parentRecipeId
     }
     return false
+}
+
+private suspend fun collectAllBaseIngredients(
+    parentId: Long,
+    availableIngredients: List<Ingredient>,
+    recipeRepository: RecipeRepository,
+    depth: Int = 0
+): List<RecipeIngredient> {
+    if (depth >= 5) return emptyList()
+    val parent = recipeRepository.getById(parentId) ?: return emptyList()
+    val direct = recipeRepository.getIngredients(parent.id).map { ri ->
+        ri.copy(ingredient = availableIngredients.find { it.id == ri.ingredientId })
+    }
+    val fromAncestors = parent.parentRecipeId?.let {
+        collectAllBaseIngredients(it, availableIngredients, recipeRepository, depth + 1)
+    } ?: emptyList()
+    return direct + fromAncestors
+}
+
+@Suppress("DefaultLocale")
+private fun computeUsageCost(ri: RecipeIngredient): Double? {
+    val ingredient = ri.ingredient ?: return null
+    return when (val mode = ri.primaryMode) {
+        is ByUsage -> {
+            val usageInUsageUnit = mode.amountPerPizza.convertTo(ingredient.usageUnit).value
+            ingredient.unitCost().amount * usageInUsageUnit
+        }
+        is ByYield -> ingredient.purchasePrice.amount / mode.pizzasPerPurchaseUnit
+    }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,7 @@ fun RecipesScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var deleteDialogRecipe by remember { mutableStateOf<Recipe?>(null) }
+    var includeFixedCosts by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadRecipes()
@@ -66,6 +69,20 @@ fun RecipesScreen(
                 fontWeight = FontWeight.Bold
             )
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = includeFixedCosts,
+                    onCheckedChange = { includeFixedCosts = it }
+                )
+                Text(
+                    text = Recipes.includeFixedCosts,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
             if (state.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -86,6 +103,7 @@ fun RecipesScreen(
                         RecipeCard(
                             recipe = recipe,
                             cost = state.costBreakdowns[recipe.id],
+                            includeFixedCosts = includeFixedCosts,
                             onClick = { onRecipeClick(recipe.id) },
                             onLongClick = { deleteDialogRecipe = recipe }
                         )
@@ -117,14 +135,23 @@ fun RecipesScreen(
     }
 }
 
+@Suppress("DefaultLocale")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RecipeCard(
     recipe: Recipe,
     cost: com.recipecostcalculator.domain.model.CostBreakdown?,
+    includeFixedCosts: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
+    val baseIngredientCount = cost?.ingredientBreakdown?.count { it.isFromParentRecipe } ?: 0
+    val subtitle = if (recipe.parentRecipeId != null) {
+        "$baseIngredientCount ${Recipes.ingredientsFromBase}"
+    } else {
+        Recipes.baseRecipe
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,7 +172,7 @@ private fun RecipeCard(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = if (recipe.parentRecipeId != null) Recipes.inheritsFromAnother else Recipes.baseRecipe,
+                text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -154,13 +181,21 @@ private fun RecipeCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            cost?.let {
+            cost?.let { breakdown ->
+                val displayCost = if (includeFixedCosts) breakdown.totalCostPerUnit else breakdown.totalVariableCost
                 Text(
-                    text = "${Recipes.cost} $${String.format("%.2f", it.totalCostPerUnit.amount)}",
+                    text = "${Recipes.cost} $${String.format("%.2f", displayCost.amount)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
+                if (includeFixedCosts && !breakdown.fixedCostPerUnit.isZero()) {
+                    Text(
+                        text = "${Recipes.fixedCostDetail} $${String.format("%.2f", breakdown.fixedCostPerUnit.amount)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
