@@ -22,4 +22,10 @@ object Recipes {
     val addIngredient = "Agregar Ingrediente"
     val deleteRecipe = "Eliminar receta"
     val deleteRecipeConfirmation = "¿Eliminar la receta \"%s\"? Esta acción no se puede deshacer."
+    val yieldModeOption = "Rinde"
+    val usageModeOption = "Cantidad"
+    val yieldFieldLabel = "Rinde"
+    val yieldPlaceholder = "¿Cuántas pizzas rinde?"
+    val yieldHelper = "Divide el precio entre las pizzas que rinde"
+    val yieldDisplay = "rinde %d pizzas"
 }

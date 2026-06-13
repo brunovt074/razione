@@ -31,6 +31,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -51,9 +54,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.Ingredient
+import com.recipecostcalculator.domain.model.IngredientUsageMode
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.financial.domain.model.Quantity
+import com.recipecostcalculator.measurement.MeasurementDimension
 import com.recipecostcalculator.measurement.MeasurementUnit
 import com.recipecostcalculator.measurement.UnitConverter
 import com.recipecostcalculator.domain.repository.RecipeRepository
@@ -385,12 +390,12 @@ fun RecipeDetailScreen(
     if (showIngredientSelector) {
         IngredientSelectorBottomSheet(
             availableIngredients = availableIngredients,
-            onIngredientSelected = { ingredient, canonicalQuantity ->
+            onIngredientSelected = { ingredient, mode ->
                 val recipeIdValue = recipeId ?: 0L
                 ownIngredients = ownIngredients + RecipeIngredient(
                     recipeId = recipeIdValue,
                     ingredientId = ingredient.id,
-                    primaryMode = ByUsage(canonicalQuantity),
+                    primaryMode = mode,
                     ingredient = ingredient
                 )
                 showIngredientSelector = false
@@ -417,7 +422,7 @@ private fun formatUsageForDisplay(ri: RecipeIngredient): String {
                 "${mode.amountPerPizza.value} ${mode.amountPerPizza.unit.label}"
             }
         }
-        is ByYield -> "rinde ${mode.pizzasPerPurchaseUnit} pizzas"
+        is ByYield -> String.format(Recipes.yieldDisplay, mode.pizzasPerPurchaseUnit)
     }
 }
 
@@ -425,12 +430,13 @@ private fun formatUsageForDisplay(ri: RecipeIngredient): String {
 @Composable
 private fun IngredientSelectorBottomSheet(
     availableIngredients: List<Ingredient>,
-    onIngredientSelected: (Ingredient, Quantity) -> Unit,
+    onIngredientSelected: (Ingredient, IngredientUsageMode) -> Unit,
     onDismiss: () -> Unit
 ) {
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var usageAmount by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf<MeasurementUnit?>(null) }
+    var isYieldMode by remember { mutableStateOf(true) }
     var ingredientExpanded by remember { mutableStateOf(false) }
     var unitExpanded by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -476,6 +482,7 @@ private fun IngredientSelectorBottomSheet(
                                 selectedIngredient = ingredient
                                 selectedUnit = ingredient.usageUnit
                                 usageAmount = ""
+                                isYieldMode = ingredient.dimension == MeasurementDimension.COUNT
                                 ingredientExpanded = false
                             }
                         )
@@ -484,46 +491,84 @@ private fun IngredientSelectorBottomSheet(
             }
 
             selectedIngredient?.let { ingredient ->
-                val availableUnits = MeasurementUnit.unitsFor(ingredient.dimension)
-                val currentUnit = selectedUnit ?: ingredient.usageUnit
+                val isCount = ingredient.dimension == MeasurementDimension.COUNT
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = usageAmount,
-                        onValueChange = { usageAmount = it },
-                        label = { Text(Ingredients.quantity) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.weight(1f)
-                    )
+                if (isCount) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        SegmentedButton(
+                            selected = isYieldMode,
+                            onClick = { isYieldMode = true; usageAmount = "" },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                        ) { Text(Recipes.yieldModeOption) }
+                        SegmentedButton(
+                            selected = !isYieldMode,
+                            onClick = { isYieldMode = false; usageAmount = "" },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                        ) { Text(Recipes.usageModeOption) }
+                    }
 
-                    ExposedDropdownMenuBox(
-                        expanded = unitExpanded,
-                        onExpandedChange = { unitExpanded = it },
-                        modifier = Modifier.weight(0.6f)
+                    if (isYieldMode) {
+                        OutlinedTextField(
+                            value = usageAmount,
+                            onValueChange = { usageAmount = it },
+                            label = { Text(Recipes.yieldFieldLabel) },
+                            placeholder = { Text(Recipes.yieldPlaceholder) },
+                            supportingText = { Text(Recipes.yieldHelper) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        OutlinedTextField(
+                            value = usageAmount,
+                            onValueChange = { usageAmount = it },
+                            label = { Text(Ingredients.quantity) },
+                            suffix = { Text(MeasurementUnit.UN.label) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                } else {
+                    val availableUnits = MeasurementUnit.unitsFor(ingredient.dimension)
+                    val currentUnit = selectedUnit ?: ingredient.usageUnit
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
-                            value = currentUnit.label,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text(Ingredients.usageUnit) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                            value = usageAmount,
+                            onValueChange = { usageAmount = it },
+                            label = { Text(Ingredients.quantity) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.weight(1f)
                         )
-                        ExposedDropdownMenu(
+
+                        ExposedDropdownMenuBox(
                             expanded = unitExpanded,
-                            onDismissRequest = { unitExpanded = false }
+                            onExpandedChange = { unitExpanded = it },
+                            modifier = Modifier.weight(0.6f)
                         ) {
-                            availableUnits.forEach { unit ->
-                                DropdownMenuItem(
-                                    text = { Text(unit.label) },
-                                    onClick = { selectedUnit = unit; unitExpanded = false }
-                                )
+                            OutlinedTextField(
+                                value = currentUnit.label,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(Ingredients.usageUnit) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = unitExpanded,
+                                onDismissRequest = { unitExpanded = false }
+                            ) {
+                                availableUnits.forEach { unit ->
+                                    DropdownMenuItem(
+                                        text = { Text(unit.label) },
+                                        onClick = { selectedUnit = unit; unitExpanded = false }
+                                    )
+                                }
                             }
                         }
                     }
@@ -542,17 +587,42 @@ private fun IngredientSelectorBottomSheet(
                 }
                 Button(
                     onClick = {
-                        val ingredient = selectedIngredient
-                        val amount = usageAmount.toDoubleOrNull()
-                        val unit = selectedUnit
-                        if (ingredient != null && amount != null && amount > 0 && unit != null) {
-                            val canonicalValue = UnitConverter.toCanonical(amount, unit)
-                            val canonical = MeasurementUnit.canonicalFor(ingredient.dimension)
-                            onIngredientSelected(ingredient, Quantity(canonicalValue, canonical))
+                        val ingredient = selectedIngredient ?: return@Button
+                        val isCount = ingredient.dimension == MeasurementDimension.COUNT
+
+                        val mode: IngredientUsageMode? = when {
+                            isCount && isYieldMode -> {
+                                val yield = usageAmount.toIntOrNull()
+                                if (yield != null && yield > 0) ByYield(yield) else null
+                            }
+                            isCount && !isYieldMode -> {
+                                val amount = usageAmount.toDoubleOrNull()
+                                if (amount != null && amount > 0)
+                                    ByUsage(Quantity(amount, MeasurementUnit.UN))
+                                else null
+                            }
+                            else -> {
+                                val amount = usageAmount.toDoubleOrNull()
+                                val unit = selectedUnit ?: ingredient.usageUnit
+                                if (amount != null && amount > 0) {
+                                    val canonicalValue = UnitConverter.toCanonical(amount, unit)
+                                    val canonical = MeasurementUnit.canonicalFor(ingredient.dimension)
+                                    ByUsage(Quantity(canonicalValue, canonical))
+                                } else null
+                            }
                         }
+
+                        if (mode != null) onIngredientSelected(ingredient, mode)
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = selectedIngredient != null && (usageAmount.toDoubleOrNull() ?: 0.0) > 0
+                    enabled = selectedIngredient != null && run {
+                        val ingredient = selectedIngredient!!
+                        val isCount = ingredient.dimension == MeasurementDimension.COUNT
+                        if (isCount && isYieldMode)
+                            (usageAmount.toIntOrNull() ?: 0) > 0
+                        else
+                            (usageAmount.toDoubleOrNull() ?: 0.0) > 0.0
+                    }
                 ) {
                     Text(Common.add)
                 }
