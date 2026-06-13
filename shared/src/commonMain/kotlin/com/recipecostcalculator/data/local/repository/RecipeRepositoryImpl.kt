@@ -151,14 +151,16 @@ class RecipeRepositoryImpl(
 
     override suspend fun insert(recipe: Recipe): Long =
         withContext(Dispatchers.IO) {
-            queries.insert(
-                name = recipe.name,
-                parentRecipeId = recipe.parentRecipeId,
-                categoryId = recipe.categoryId,
-                createdAt = recipe.createdAt,
-                updatedAt = recipe.updatedAt
-            )
-            queries.lastInsertId().executeAsOne().also { refresh() }
+            db.transactionWithResult {
+                queries.insert(
+                    name = recipe.name,
+                    parentRecipeId = recipe.parentRecipeId,
+                    categoryId = recipe.categoryId,
+                    createdAt = recipe.createdAt,
+                    updatedAt = recipe.updatedAt
+                )
+                queries.lastInsertId().executeAsOne()
+            }.also { refresh() }
         }
 
     override suspend fun update(recipe: Recipe): Unit =

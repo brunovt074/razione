@@ -1,7 +1,9 @@
 package com.recipecostcalculator
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.recipecostcalculator.data.local.DatabaseSeeder
 import com.recipecostcalculator.di.desktopAppModule
 import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.CategoriesViewModel
@@ -27,12 +29,16 @@ fun main() = application {
         val fixedCostsViewModel: FixedCostsViewModel by inject()
         val additionalCostsViewModel: AdditionalVariableCostsViewModel by inject()
         val settingsViewModel: SettingsViewModel by inject()
+        val seeder: DatabaseSeeder by inject()
     }
 
     Window(
         onCloseRequest = ::exitApplication,
         title = "Recipe Cost Calculator",
     ) {
+        LaunchedEffect(Unit) {
+            injector.seeder.seedIfNeeded()
+        }
         App(
             dashboardViewModel = injector.dashboardViewModel,
             recipesViewModel = injector.recipesViewModel,

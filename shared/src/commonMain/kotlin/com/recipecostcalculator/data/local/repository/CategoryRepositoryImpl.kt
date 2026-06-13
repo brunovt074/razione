@@ -83,14 +83,16 @@ class CategoryRepositoryImpl(
 
     override suspend fun insert(category: Category): Long =
         withContext(Dispatchers.IO) {
-            queries.insert(
-                name = category.name,
-                unitLabel = category.unitLabel,
-                sortOrder = category.sortOrder.toLong(),
-                createdAt = category.createdAt,
-                updatedAt = category.updatedAt
-            )
-            queries.lastInsertId().executeAsOne().also { refresh() }
+            db.transactionWithResult {
+                queries.insert(
+                    name = category.name,
+                    unitLabel = category.unitLabel,
+                    sortOrder = category.sortOrder.toLong(),
+                    createdAt = category.createdAt,
+                    updatedAt = category.updatedAt
+                )
+                queries.lastInsertId().executeAsOne()
+            }.also { refresh() }
         }
 
     override suspend fun update(category: Category): Unit =
