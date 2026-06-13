@@ -36,6 +36,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -80,6 +81,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -94,6 +96,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -108,6 +111,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -122,6 +126,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -136,6 +141,7 @@ class RecipeRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     parentRecipeId = row.parent_recipe_id,
+                    categoryId = row.category_id,
                     recipeIngredients = loadRecipeIngredients(row.id),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -148,6 +154,7 @@ class RecipeRepositoryImpl(
             queries.insert(
                 name = recipe.name,
                 parentRecipeId = recipe.parentRecipeId,
+                categoryId = recipe.categoryId,
                 createdAt = recipe.createdAt,
                 updatedAt = recipe.updatedAt
             )
@@ -159,6 +166,7 @@ class RecipeRepositoryImpl(
             queries.update(
                 name = recipe.name,
                 parentRecipeId = recipe.parentRecipeId,
+                categoryId = recipe.categoryId,
                 updatedAt = System.currentTimeMillis(),
                 id = recipe.id
             )
@@ -214,6 +222,7 @@ class RecipeRepositoryImpl(
                         id = recipe.id,
                         name = recipe.name,
                         parentRecipeId = recipe.parent_recipe_id,
+                        categoryId = recipe.category_id,
                         recipeIngredients = loadRecipeIngredients(recipe.id),
                         createdAt = recipe.created_at,
                         updatedAt = recipe.updated_at

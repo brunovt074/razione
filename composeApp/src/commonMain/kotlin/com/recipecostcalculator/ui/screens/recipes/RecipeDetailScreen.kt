@@ -61,6 +61,8 @@ import com.recipecostcalculator.financial.domain.model.Quantity
 import com.recipecostcalculator.measurement.MeasurementDimension
 import com.recipecostcalculator.measurement.MeasurementUnit
 import com.recipecostcalculator.measurement.UnitConverter
+import com.recipecostcalculator.domain.model.Category
+import com.recipecostcalculator.domain.repository.CategoryRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -75,10 +77,12 @@ import org.koin.compose.koinInject
 @Composable
 fun RecipeDetailScreen(
     recipeId: Long?,
+    preselectedCategoryId: Long?,
     viewModel: RecipesViewModel,
     onBack: () -> Unit
 ) {
     val recipeRepository: RecipeRepository = koinInject()
+    val categoryRepository: CategoryRepository = koinInject()
     val ingredientsViewModel: IngredientsViewModel = koinInject()
     val scope = rememberCoroutineScope()
 
@@ -90,10 +94,19 @@ fun RecipeDetailScreen(
     var existingRecipe by remember { mutableStateOf<Recipe?>(null) }
     var name by remember { mutableStateOf("") }
     var parentRecipeId by remember { mutableStateOf<Long?>(null) }
+    var selectedCategoryId by remember { mutableStateOf(preselectedCategoryId) }
+    var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var parentRecipeExpanded by remember { mutableStateOf(false) }
+    var categoryExpanded by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(recipeId != null && recipeId != 0L) }
     var isValidating by remember { mutableStateOf(false) }
     var cycleError by remember { mutableStateOf(false) }
+
+    val unitLabel = categories.find { it.id == selectedCategoryId }?.unitLabel ?: "unidades"
+
+    LaunchedEffect(Unit) {
+        categories = categoryRepository.getAll()
+    }
 
     var ownIngredients by remember { mutableStateOf<List<RecipeIngredient>>(emptyList()) }
     var inheritedIngredients by remember { mutableStateOf<List<RecipeIngredient>>(emptyList()) }
@@ -112,6 +125,7 @@ fun RecipeDetailScreen(
                 existingRecipe = it
                 name = it.name
                 parentRecipeId = it.parentRecipeId
+                selectedCategoryId = it.categoryId ?: preselectedCategoryId
             }
             isLoading = false
         }
@@ -150,6 +164,7 @@ fun RecipeDetailScreen(
                         id = recipeId ?: 0,
                         name = name,
                         parentRecipeId = parentRecipeId,
+                        categoryId = selectedCategoryId,
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
                     ),
@@ -162,6 +177,7 @@ fun RecipeDetailScreen(
                         id = existingRecipe?.id ?: 0,
                         name = name.trim(),
                         parentRecipeId = parentRecipeId,
+                        categoryId = selectedCategoryId,
                         recipeIngredients = ownIngredients.map { it.copy(recipeId = existingRecipe?.id ?: 0) },
                         createdAt = existingRecipe?.createdAt ?: System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
@@ -175,6 +191,7 @@ fun RecipeDetailScreen(
                 id = existingRecipe?.id ?: 0,
                 name = name.trim(),
                 parentRecipeId = null,
+                categoryId = selectedCategoryId,
                 recipeIngredients = ownIngredients.map { it.copy(recipeId = existingRecipe?.id ?: 0) },
                 createdAt = existingRecipe?.createdAt ?: System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
@@ -220,6 +237,33 @@ fun RecipeDetailScreen(
                     label = { Text(Recipes.recipeName) },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = categories.find { it.id == selectedCategoryId }?.name ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(Recipes.category) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = categoryExpanded,
+                        onDismissRequest = { categoryExpanded = false }
+                    ) {
+                        categories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = { selectedCategoryId = category.id; categoryExpanded = false }
+                            )
+                        }
+                    }
+                }
 
                 ExposedDropdownMenuBox(
                     expanded = parentRecipeExpanded,
@@ -390,6 +434,7 @@ fun RecipeDetailScreen(
     if (showIngredientSelector) {
         IngredientSelectorBottomSheet(
             availableIngredients = availableIngredients,
+            unitLabel = unitLabel,
             onIngredientSelected = { ingredient, mode ->
                 val recipeIdValue = recipeId ?: 0L
                 ownIngredients = ownIngredients + RecipeIngredient(
@@ -406,7 +451,7 @@ fun RecipeDetailScreen(
 }
 
 @Suppress("DefaultLocale")
-private fun formatUsageForDisplay(ri: RecipeIngredient): String {
+private fun formatUsageForDisplay(ri: RecipeIngredient, unitLabel: String = "unidades"): String {
     val ingredient = ri.ingredient
     return when (val mode = ri.primaryMode) {
         is ByUsage -> {
@@ -422,7 +467,7 @@ private fun formatUsageForDisplay(ri: RecipeIngredient): String {
                 "${mode.amountPerPizza.value} ${mode.amountPerPizza.unit.label}"
             }
         }
-        is ByYield -> String.format(Recipes.yieldDisplay, mode.pizzasPerPurchaseUnit)
+        is ByYield -> Recipes.yieldDisplay(mode.pizzasPerPurchaseUnit, unitLabel)
     }
 }
 
@@ -430,6 +475,7 @@ private fun formatUsageForDisplay(ri: RecipeIngredient): String {
 @Composable
 private fun IngredientSelectorBottomSheet(
     availableIngredients: List<Ingredient>,
+    unitLabel: String,
     onIngredientSelected: (Ingredient, IngredientUsageMode) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -512,8 +558,8 @@ private fun IngredientSelectorBottomSheet(
                             value = usageAmount,
                             onValueChange = { usageAmount = it },
                             label = { Text(Recipes.yieldFieldLabel) },
-                            placeholder = { Text(Recipes.yieldPlaceholder) },
-                            supportingText = { Text(Recipes.yieldHelper) },
+                            placeholder = { Text(Recipes.yieldPlaceholder(unitLabel)) },
+                            supportingText = { Text(Recipes.yieldHelper(unitLabel)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth()
                         )

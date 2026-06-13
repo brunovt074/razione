@@ -24,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.recipecostcalculator.ui.strings.es.Navigation
 import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.CategoriesViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
 import com.recipecostcalculator.ui.screens.additionalvariablecosts.AdditionalVariableCostsScreen
+import com.recipecostcalculator.ui.screens.categories.CategoriesScreen
 import com.recipecostcalculator.ui.screens.configuration.ConfigurationScreen
 import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
 import com.recipecostcalculator.ui.screens.fixedcosts.FixedCostsScreen
@@ -53,6 +55,7 @@ private const val TAB_COUNT = 4
 fun App(
     dashboardViewModel: DashboardViewModel,
     recipesViewModel: RecipesViewModel,
+    categoriesViewModel: CategoriesViewModel,
     ingredientsViewModel: IngredientsViewModel,
     fixedCostsViewModel: FixedCostsViewModel,
     additionalCostsViewModel: AdditionalVariableCostsViewModel,
@@ -60,22 +63,41 @@ fun App(
 ) {
     var route by remember { mutableStateOf<MainRoute>(MainRoute.Tabs) }
     var selectedRecipeId by remember { mutableStateOf<Long?>(null) }
+    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
+    var selectedCategoryName by remember { mutableStateOf("") }
     val pagerState = rememberPagerState(pageCount = { TAB_COUNT })
     val coroutineScope = rememberCoroutineScope()
 
     val tabs = listOf(
         TabItem(Navigation.home, Icons.Filled.Home) { DashboardScreen(dashboardViewModel) },
         TabItem(Navigation.recipes, Icons.Filled.Fastfood) {
-            if (selectedRecipeId != null) {
-                RecipeDetailScreenWrapper(
+            when {
+                selectedRecipeId != null -> RecipeDetailScreen(
                     recipeId = selectedRecipeId,
-                    recipesViewModel = recipesViewModel,
+                    preselectedCategoryId = selectedCategoryId,
+                    viewModel = recipesViewModel,
                     onBack = { selectedRecipeId = null }
                 )
-            } else {
-                RecipesScreen(
+                selectedCategoryId != null -> RecipesScreen(
                     viewModel = recipesViewModel,
-                    onRecipeClick = { id -> selectedRecipeId = id }
+                    categoryName = selectedCategoryName,
+                    onRecipeClick = { id -> selectedRecipeId = id },
+                    onBack = {
+                        selectedCategoryId = null
+                        selectedCategoryName = ""
+                        recipesViewModel.setCategory(null)
+                    }
+                )
+                else -> CategoriesScreen(
+                    viewModel = categoriesViewModel,
+                    onCategoryClick = { id ->
+                        val cat = categoriesViewModel.state.value.categories.find { it.id == id }
+                        if (cat != null) {
+                            selectedCategoryId = id
+                            selectedCategoryName = cat.name
+                            recipesViewModel.setCategory(id)
+                        }
+                    }
                 )
             }
         },
@@ -145,15 +167,3 @@ data class TabItem(
     val content: @Composable () -> Unit
 )
 
-@Composable
-private fun RecipeDetailScreenWrapper(
-    recipeId: Long?,
-    recipesViewModel: RecipesViewModel,
-    onBack: () -> Unit
-) {
-    RecipeDetailScreen(
-        recipeId = recipeId,
-        viewModel = recipesViewModel,
-        onBack = onBack
-    )
-}

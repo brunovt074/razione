@@ -2,6 +2,7 @@ CREATE TABLE recipes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     parent_recipe_id INTEGER REFERENCES recipes(id),
+    category_id INTEGER REFERENCES categories(id),
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
@@ -21,12 +22,15 @@ SELECT * FROM recipes ORDER BY parent_recipe_id IS NULL DESC, name ASC;
 selectByParent:
 SELECT * FROM recipes WHERE parent_recipe_id = :parentId ORDER BY name ASC;
 
+selectByCategory:
+SELECT * FROM recipes WHERE category_id = :categoryId ORDER BY name ASC;
+
 insert:
-INSERT INTO recipes(name, parent_recipe_id, created_at, updated_at)
-VALUES (:name, :parentRecipeId, :createdAt, :updatedAt);
+INSERT INTO recipes(name, parent_recipe_id, category_id, created_at, updated_at)
+VALUES (:name, :parentRecipeId, :categoryId, :createdAt, :updatedAt);
 
 update:
-UPDATE recipes SET name = :name, parent_recipe_id = :parentRecipeId, updated_at = :updatedAt
+UPDATE recipes SET name = :name, parent_recipe_id = :parentRecipeId, category_id = :categoryId, updated_at = :updatedAt
 WHERE id = :id;
 
 delete:

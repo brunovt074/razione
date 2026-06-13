@@ -27,16 +27,24 @@ class RecipesViewModel(
 ) : ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
+    private val _activeCategoryId = MutableStateFlow<Long?>(null)
+
+    fun setCategory(categoryId: Long?) {
+        _activeCategoryId.value = categoryId
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _data: StateFlow<RecipesState> = combine(
         recipeRepository.observeAll(),
         ingredientRepository.observeAll(),
-        additionalCostRepository.observeAll()
-    ) { _, _, _ -> Unit }
+        additionalCostRepository.observeAll(),
+        _activeCategoryId
+    ) { _, _, _, _ -> Unit }
     .flatMapLatest {
         flow {
+            val catId = _activeCategoryId.value
             val recipes = recipeRepository.getAll()
+                .let { all -> if (catId != null) all.filter { it.categoryId == catId } else all }
             val costsMap = recipes.associate { recipe ->
                 recipe.id to calculateRecipeCostUseCase(recipe.id).getOrNull()
             }

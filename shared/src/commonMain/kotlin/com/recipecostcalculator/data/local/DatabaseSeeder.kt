@@ -2,12 +2,14 @@ package com.recipecostcalculator.data.local
 
 import com.recipecostcalculator.domain.model.AdditionalVariableCost
 import com.recipecostcalculator.domain.model.AppSettings
+import com.recipecostcalculator.domain.model.Category
 import com.recipecostcalculator.domain.model.Ingredient
 import com.recipecostcalculator.domain.model.ByUsage
 import com.recipecostcalculator.domain.model.ByYield
 import com.recipecostcalculator.domain.model.Recipe
 import com.recipecostcalculator.domain.model.RecipeIngredient
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
+import com.recipecostcalculator.domain.repository.CategoryRepository
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
@@ -22,7 +24,8 @@ class DatabaseSeeder(
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,
     private val additionalCostRepository: AdditionalVariableCostRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val categoryRepository: CategoryRepository
 ) {
     companion object {
         private const val CURRENT_SEED_VERSION = 3
@@ -33,8 +36,9 @@ class DatabaseSeeder(
         if (settings.seedVersion >= CURRENT_SEED_VERSION) return
 
         clearExistingData()
+        val pizzasCategoryId = seedCategories()
         seedIngredients()
-        seedRecipes()
+        seedRecipes(pizzasCategoryId)
         seedAdditionalCosts()
         seedSettings()
     }
@@ -45,6 +49,14 @@ class DatabaseSeeder(
         recipes.filter { it.parentRecipeId != null }.forEach { recipeRepository.delete(it.id) }
         recipes.filter { it.parentRecipeId == null }.forEach { recipeRepository.delete(it.id) }
         ingredientRepository.observeAll().first().forEach { ingredientRepository.delete(it.id) }
+        categoryRepository.getAll().forEach { categoryRepository.delete(it.id) }
+    }
+
+    private suspend fun seedCategories(): Long {
+        val now = System.currentTimeMillis()
+        return categoryRepository.insert(
+            Category(name = "Pizzas", unitLabel = "pizzas", sortOrder = 0, createdAt = now, updatedAt = now)
+        )
     }
 
     private fun canonicalQuantity(amount: Double, inputUnit: MeasurementUnit): Quantity {
@@ -119,9 +131,9 @@ class DatabaseSeeder(
         ingredients.forEach { ingredientRepository.insert(it) }
     }
 
-    private suspend fun seedRecipes() {
+    private suspend fun seedRecipes(categoryId: Long) {
         val now = System.currentTimeMillis()
-        val muzzarella = Recipe(name = "Muzzarela", parentRecipeId = null, createdAt = now, updatedAt = now)
+        val muzzarella = Recipe(name = "Muzzarela", parentRecipeId = null, categoryId = categoryId, createdAt = now, updatedAt = now)
         val muzzarellaId = recipeRepository.insert(muzzarella)
 
         val ingredientes = ingredientRepository.observeAll().first()

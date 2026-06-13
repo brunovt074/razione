@@ -4,6 +4,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.recipecostcalculator.di.desktopAppModule
 import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.CategoriesViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -21,6 +22,7 @@ fun main() = application {
     val injector = object : KoinComponent {
         val dashboardViewModel: DashboardViewModel by inject()
         val recipesViewModel: RecipesViewModel by inject()
+        val categoriesViewModel: CategoriesViewModel by inject()
         val ingredientsViewModel: IngredientsViewModel by inject()
         val fixedCostsViewModel: FixedCostsViewModel by inject()
         val additionalCostsViewModel: AdditionalVariableCostsViewModel by inject()
@@ -34,6 +36,7 @@ fun main() = application {
         App(
             dashboardViewModel = injector.dashboardViewModel,
             recipesViewModel = injector.recipesViewModel,
+            categoriesViewModel = injector.categoriesViewModel,
             ingredientsViewModel = injector.ingredientsViewModel,
             fixedCostsViewModel = injector.fixedCostsViewModel,
             additionalCostsViewModel = injector.additionalCostsViewModel,

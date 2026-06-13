@@ -5,17 +5,20 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.recipecostcalculator.db.PizzeriaDatabase
 import com.recipecostcalculator.data.local.DatabaseSeeder
 import com.recipecostcalculator.data.local.repository.AdditionalVariableCostRepositoryImpl
+import com.recipecostcalculator.data.local.repository.CategoryRepositoryImpl
 import com.recipecostcalculator.data.local.repository.FixedCostRepositoryImpl
 import com.recipecostcalculator.data.local.repository.IngredientRepositoryImpl
 import com.recipecostcalculator.data.local.repository.RecipeRepositoryImpl
 import com.recipecostcalculator.data.local.repository.SettingsRepositoryImpl
 import com.recipecostcalculator.domain.repository.AdditionalVariableCostRepository
+import com.recipecostcalculator.domain.repository.CategoryRepository
 import com.recipecostcalculator.domain.repository.FixedCostRepository
 import com.recipecostcalculator.domain.repository.IngredientRepository
 import com.recipecostcalculator.domain.repository.RecipeRepository
 import com.recipecostcalculator.domain.repository.SettingsRepository
 import com.recipecostcalculator.domain.usecase.CalculateRecipeCostUseCase
 import com.recipecostcalculator.ui.viewmodel.AdditionalVariableCostsViewModel
+import com.recipecostcalculator.ui.viewmodel.CategoriesViewModel
 import com.recipecostcalculator.ui.viewmodel.DashboardViewModel
 import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
@@ -35,6 +38,7 @@ val desktopAppModule = module {
 
     single<PizzeriaDatabase> { PizzeriaDatabase(get()) }
 
+    single<CategoryRepository> { CategoryRepositoryImpl(get()) }
     single<IngredientRepository> { IngredientRepositoryImpl(get()) }
     single<RecipeRepository> { RecipeRepositoryImpl(get()) }
     single<AdditionalVariableCostRepository> { AdditionalVariableCostRepositoryImpl(get()) }
@@ -51,7 +55,7 @@ val desktopAppModule = module {
         )
     }
 
-    single<DatabaseSeeder> { DatabaseSeeder(get(), get(), get(), get()) }
+    single<DatabaseSeeder> { DatabaseSeeder(get(), get(), get(), get(), get()) }
 
     viewModel<IngredientsViewModel> { IngredientsViewModel(ingredientRepository = get()) }
     viewModel<RecipesViewModel> {
@@ -74,5 +78,6 @@ val desktopAppModule = module {
             calculateRecipeCostUseCase = get()
         )
     }
+    viewModel<CategoriesViewModel> { CategoriesViewModel(categoryRepository = get(), recipeRepository = get()) }
     viewModel<SettingsViewModel> { SettingsViewModel(settingsRepository = get()) }
 }

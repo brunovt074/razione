@@ -26,7 +26,8 @@ object Recipes {
     val yieldModeOption = "Rinde"
     val usageModeOption = "Cantidad"
     val yieldFieldLabel = "Rinde"
-    val yieldPlaceholder = "¿Cuántas pizzas rinde?"
-    val yieldHelper = "Divide el precio entre las pizzas que rinde"
-    val yieldDisplay = "rinde %d pizzas"
+    fun yieldPlaceholder(unitLabel: String) = "¿Cuántas $unitLabel rinde?"
+    fun yieldHelper(unitLabel: String) = "Divide el precio entre los/las $unitLabel que rinde"
+    fun yieldDisplay(count: Int, unitLabel: String) = "rinde $count $unitLabel"
+    val category = "Categoría"
 }
