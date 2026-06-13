@@ -5,9 +5,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -144,13 +147,6 @@ private fun RecipeCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
-    val baseIngredientCount = cost?.ingredientBreakdown?.count { it.isFromParentRecipe } ?: 0
-    val subtitle = if (recipe.parentRecipeId != null) {
-        "$baseIngredientCount ${Recipes.ingredientsFromBase}"
-    } else {
-        Recipes.baseRecipe
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,32 +166,65 @@ private fun RecipeCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "${recipe.recipeIngredients.size} ${Recipes.ingredientCount}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             cost?.let { breakdown ->
-                val displayCost = if (includeFixedCosts) breakdown.totalCostPerUnit else breakdown.totalVariableCost
-                Text(
-                    text = "${Recipes.cost} $${String.format("%.2f", displayCost.amount)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                if (includeFixedCosts && !breakdown.fixedCostPerUnit.isZero()) {
-                    Text(
-                        text = "${Recipes.fixedCostDetail} $${String.format("%.2f", breakdown.fixedCostPerUnit.amount)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                val baseCount = breakdown.ingredientBreakdown.count { it.isFromParentRecipe }
+                val ownCount = breakdown.ingredientBreakdown.count { !it.isFromParentRecipe }
+                val displayTotal = if (includeFixedCosts) breakdown.totalCostPerUnit else breakdown.totalVariableCost
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (baseCount > 0) {
+                        BreakdownRow(
+                            label = ingredientLabel(baseCount, fromBase = true),
+                            amount = breakdown.ingredientCostFromParent.amount
+                        )
+                    }
+                    if (ownCount > 0) {
+                        BreakdownRow(
+                            label = ingredientLabel(ownCount, fromBase = false),
+                            amount = breakdown.ingredientCostOwn.amount
+                        )
+                    }
+                    if (!breakdown.additionalVariableCost.isZero()) {
+                        BreakdownRow(
+                            label = Recipes.supplies,
+                            amount = breakdown.additionalVariableCost.amount
+                        )
+                    }
+                    if (includeFixedCosts && !breakdown.fixedCostPerUnit.isZero()) {
+                        BreakdownRow(
+                            label = Recipes.fixedCostLine,
+                            amount = breakdown.fixedCostPerUnit.amount
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    BreakdownRow(
+                        label = Recipes.totalCost,
+                        amount = displayTotal.amount,
+                        isTotal = true
                     )
                 }
             }
         }
     }
+}
+
+@Suppress("DefaultLocale")
+@Composable
+private fun BreakdownRow(label: String, amount: Double, isTotal: Boolean = false) {
+    val style = if (isTotal) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodySmall
+    val color = if (isTotal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val weight = if (isTotal) FontWeight.Bold else FontWeight.Normal
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, style = style, color = color, fontWeight = weight)
+        Text("$${String.format("%.2f", amount)}", style = style, color = color, fontWeight = weight)
+    }
+}
+
+private fun ingredientLabel(count: Int, fromBase: Boolean): String {
+    val noun = if (count == 1) Recipes.ingredientSingular else Recipes.ingredientCount
+    return if (fromBase) "$count $noun ${Recipes.baseRecipeSuffix}" else "$count $noun"
 }
