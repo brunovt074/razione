@@ -2,6 +2,7 @@ CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     unit_label TEXT NOT NULL,
+    description TEXT,
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -14,7 +15,7 @@ selectById:
 SELECT * FROM categories WHERE id = :id;
 
 selectAllWithCount:
-SELECT c.id, c.name, c.unit_label, c.sort_order, c.created_at, c.updated_at,
+SELECT c.id, c.name, c.unit_label, c.description, c.sort_order, c.created_at, c.updated_at,
        COUNT(r.id) AS recipe_count
 FROM categories c
 LEFT JOIN recipes r ON r.category_id = c.id
@@ -22,11 +23,11 @@ GROUP BY c.id
 ORDER BY c.sort_order ASC, c.name ASC;
 
 insert:
-INSERT INTO categories(name, unit_label, sort_order, created_at, updated_at)
-VALUES (:name, :unitLabel, :sortOrder, :createdAt, :updatedAt);
+INSERT INTO categories(name, unit_label, description, sort_order, created_at, updated_at)
+VALUES (:name, :unitLabel, :description, :sortOrder, :createdAt, :updatedAt);
 
 update:
-UPDATE categories SET name = :name, unit_label = :unitLabel, sort_order = :sortOrder, updated_at = :updatedAt
+UPDATE categories SET name = :name, unit_label = :unitLabel, description = :description, sort_order = :sortOrder, updated_at = :updatedAt
 WHERE id = :id;
 
 delete:

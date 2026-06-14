@@ -184,6 +184,13 @@ private fun CategoryCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                category.description?.takeIf { it.isNotBlank() }?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -202,7 +209,7 @@ private fun CategoryFormSheet(
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(initial?.name ?: "") }
-    var unitLabel by remember { mutableStateOf(initial?.unitLabel ?: "") }
+    var description by remember { mutableStateOf(initial?.description ?: "") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -226,10 +233,10 @@ private fun CategoryFormSheet(
             )
 
             OutlinedTextField(
-                value = unitLabel,
-                onValueChange = { unitLabel = it },
-                label = { Text(Categories.unitLabel) },
-                supportingText = { Text(Categories.unitLabelHelper) },
+                value = description,
+                onValueChange = { description = it },
+                label = { Text(Categories.description) },
+                supportingText = { Text(Categories.descriptionHelper) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -247,14 +254,15 @@ private fun CategoryFormSheet(
                             Category(
                                 id = initial?.id ?: 0,
                                 name = name.trim(),
-                                unitLabel = unitLabel.trim(),
+                                unitLabel = name.trim().lowercase(),
+                                description = description.trim().takeIf { it.isNotBlank() },
                                 sortOrder = initial?.sortOrder ?: 0,
                                 createdAt = initial?.createdAt ?: now,
                                 updatedAt = now
                             )
                         )
                     },
-                    enabled = name.isNotBlank() && unitLabel.isNotBlank(),
+                    enabled = name.isNotBlank(),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(Common.save)

@@ -30,6 +30,7 @@ class CategoryRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     unitLabel = row.unit_label,
+                    description = row.description,
                     sortOrder = row.sort_order.toInt(),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -45,6 +46,7 @@ class CategoryRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     unitLabel = row.unit_label,
+                    description = row.description,
                     sortOrder = row.sort_order.toInt(),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -59,6 +61,7 @@ class CategoryRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     unitLabel = row.unit_label,
+                    description = row.description,
                     sortOrder = row.sort_order.toInt(),
                     recipeCount = row.recipe_count.toInt(),
                     createdAt = row.created_at,
@@ -74,6 +77,7 @@ class CategoryRepositoryImpl(
                     id = row.id,
                     name = row.name,
                     unitLabel = row.unit_label,
+                    description = row.description,
                     sortOrder = row.sort_order.toInt(),
                     createdAt = row.created_at,
                     updatedAt = row.updated_at
@@ -87,6 +91,7 @@ class CategoryRepositoryImpl(
                 queries.insert(
                     name = category.name,
                     unitLabel = category.unitLabel,
+                    description = category.description,
                     sortOrder = category.sortOrder.toLong(),
                     createdAt = category.createdAt,
                     updatedAt = category.updatedAt
@@ -100,6 +105,7 @@ class CategoryRepositoryImpl(
             queries.update(
                 name = category.name,
                 unitLabel = category.unitLabel,
+                description = category.description,
                 sortOrder = category.sortOrder.toLong(),
                 updatedAt = System.currentTimeMillis(),
                 id = category.id
