@@ -6,3 +6,4 @@ out/
 
 **/build/
 business-context/
+composeApp/pizzeria.db
