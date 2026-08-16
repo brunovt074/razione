@@ -2,6 +2,16 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps: Properties? = if (keystorePropsFile.exists()) {
+    Properties().apply { keystorePropsFile.inputStream().use { load(it) } }
+} else {
+    null
+}
+
+fun keystoreProperty(key: String): String? =
+    keystoreProps?.getProperty(key) ?: System.getenv(key)
+
 plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
@@ -103,9 +113,23 @@ android {
         versionName = libs.versions.app.versionName.get()
     }
 
+    signingConfigs {
+        if (keystoreProps != null) {
+            create("release") {
+                storeFile = keystoreProperty("RELEASE_STORE_FILE")?.let { file(it) }
+                storePassword = keystoreProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = keystoreProperty("RELEASE_KEY_ALIAS")
+                keyPassword = keystoreProperty("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (keystoreProps != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

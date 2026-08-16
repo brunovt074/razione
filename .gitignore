@@ -10,3 +10,6 @@ composeApp/pizzeria.db
 pizzeria.db
 composeApp/release/
 local.properties
+keystore.properties
+*.keystore
+*.jks
