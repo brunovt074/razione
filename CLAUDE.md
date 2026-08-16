@@ -287,6 +287,7 @@ Architectural decisions made - do not relitigate without strong evidence:
 | Branch chaining strategy | Keep each stage auditable and independently reviewable |
 | One declaration per file | Improves readability and agent consistency |
 | No nested enums/classes | Avoid hidden coupling and bloated files |
+| Precio de compra = paquete completo; Contenido = lo que trae ese paquete; unitCost = precio / contenido | Semántica canónica de la planilla del stakeholder (`business-context/Planilla_Pizzas_Congeladas_Costos_y_Margen.xlsx`, columnas "Precio compra" / "Contenido compra", fórmula `(C/D)*F`). Ver engram #210 |
 
 ---
 

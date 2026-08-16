@@ -196,9 +196,19 @@ private fun IngredientCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
+            val contentInPurchaseUnit = ingredient.contentAmount.convertTo(ingredient.purchaseUnit)
+            Text(
+                text = Ingredients.purchaseSummary.format(
+                    String.format("%.2f", ingredient.purchasePrice.amount),
+                    String.format("%.3f", contentInPurchaseUnit.value).trimEnd('0').trimEnd('.'),
+                    ingredient.purchaseUnit.label
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             ingredient.details?.let { label ->
                 Text(
-                    text = "$label — $${String.format("%.2f", ingredient.purchasePrice.amount)}",
+                    text = label,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -238,7 +248,7 @@ private fun IngredientForm(
             } ?: ""
         )
     }
-    var usageUnit by remember { mutableStateOf(ingredient?.usageUnit ?: MeasurementUnit.G) }
+    var usageUnit by remember { mutableStateOf(ingredient?.usageUnit ?: purchaseUnit) }
 
     var nameError by remember { mutableStateOf(false) }
     var purchasePriceError by remember { mutableStateOf(false) }
@@ -337,17 +347,21 @@ private fun IngredientForm(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             prefix = { Text("$") },
             isError = purchasePriceError,
-            supportingText = if (purchasePriceError) {{ Text(Common.required) }} else null
+            supportingText = {
+                if (purchasePriceError) Text(Common.required) else Text(Ingredients.purchasePriceHelper)
+            }
         )
 
         OutlinedTextField(
             value = contentAmountStr,
             onValueChange = { contentAmountStr = it; contentAmountError = false },
-            label = { Text("${Ingredients.quantity} (${purchaseUnit.label})") },
+            label = { Text("${Ingredients.contentAmount} (${purchaseUnit.label})") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = contentAmountError,
-            supportingText = if (contentAmountError) {{ Text(Common.required) }} else null
+            supportingText = {
+                if (contentAmountError) Text(Common.required) else Text(Ingredients.contentAmountHelper)
+            }
         )
 
         ExposedDropdownMenuBox(
@@ -372,6 +386,47 @@ private fun IngredientForm(
                     DropdownMenuItem(
                         text = { Text(unit.label) },
                         onClick = { usageUnit = unit; usageUnitExpanded = false }
+                    )
+                }
+            }
+        }
+
+        val previewPrice = purchasePrice.toDoubleOrNull()
+        val previewContent = contentAmountStr.toDoubleOrNull()
+        if (previewPrice != null && previewPrice > 0 && previewContent != null && previewContent > 0 &&
+            purchaseUnit.dimension == dimension && usageUnit.dimension == dimension
+        ) {
+            val previewIngredient = Ingredient(
+                name = name.ifBlank { "-" },
+                dimension = dimension,
+                purchaseUnit = purchaseUnit,
+                purchasePrice = Money(previewPrice),
+                contentAmount = Quantity(UnitConverter.toCanonical(previewContent, purchaseUnit), MeasurementUnit.canonicalFor(dimension)),
+                usageUnit = usageUnit
+            )
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = Ingredients.purchaseSummary.format(
+                            String.format("%.2f", previewPrice),
+                            String.format("%.3f", previewContent).trimEnd('0').trimEnd('.'),
+                            purchaseUnit.label
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "${Ingredients.unitCost}: $${String.format("%.2f", previewIngredient.unitCost().amount)} / ${usageUnit.label}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
