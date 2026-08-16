@@ -15,6 +15,7 @@ android-compileSdk = "36"
 app-versionCode = "3"
 app-versionName = "1.0.2"
 google-play-core = "2.1.0"
+play-publisher = "3.11.0"
 
 [libraries]
 # Kotlin Test
@@ -64,3 +65,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 android-application = { id = "com.android.application", version = "8.7.3" }
 android-library = { id = "com.android.library", version = "8.7.3" }
+playPublisher = { id = "com.github.triplet.play", version.ref = "play-publisher" }

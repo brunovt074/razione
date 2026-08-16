@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.composeCompiler)
@@ -7,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.playPublisher)
     id("com.android.application")
 }
 
@@ -145,4 +147,17 @@ sqldelight {
             packageName = "com.recipecostcalculator.db"
         }
     }
+}
+
+val localPropsFile = rootProject.file("local.properties")
+val playServiceAccount: String = if (localPropsFile.exists()) {
+    val props = Properties()
+    localPropsFile.inputStream().use { props.load(it) }
+    props.getProperty("play.publisher.serviceAccountCredentials")
+} else {
+    null
+} ?: error("play.publisher.serviceAccountCredentials must be set in local.properties")
+
+play {
+    serviceAccountCredentials = file(playServiceAccount)
 }

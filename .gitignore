@@ -9,3 +9,4 @@ business-context/
 composeApp/pizzeria.db
 pizzeria.db
 composeApp/release/
+local.properties
