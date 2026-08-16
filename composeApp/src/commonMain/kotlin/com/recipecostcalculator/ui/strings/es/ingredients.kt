@@ -11,7 +11,7 @@ object Ingredients {
     val purchasePrice = "Precio de compra"
     val quantity = "Cantidad"
     val usageUnit = "Unidad de uso"
-    val unitCost = "Costo por unidad"
+    val unitCost = "Costo unitario"
     val updatePrice = "Actualizar precio"
     val price = "Precio"
     val deleteIngredient = "Eliminar ingrediente"

@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import com.recipecostcalculator.di.androidAppModule
-import com.recipecostcalculator.ui.theme.AppTheme
+import com.recipecostcalculator.ui.theme.RazioneTheme
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         val seeder: com.recipecostcalculator.data.local.DatabaseSeeder by inject()
 
         setContent {
-            AppTheme {
+            RazioneTheme {
                 LaunchedEffect(Unit) {
                     seeder.seedIfNeeded()
                 }

@@ -12,6 +12,7 @@ import com.recipecostcalculator.ui.viewmodel.FixedCostsViewModel
 import com.recipecostcalculator.ui.viewmodel.IngredientsViewModel
 import com.recipecostcalculator.ui.viewmodel.RecipesViewModel
 import com.recipecostcalculator.ui.viewmodel.SettingsViewModel
+import com.recipecostcalculator.ui.theme.RazioneTheme
 import org.koin.core.context.startKoin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -36,17 +37,19 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "Recipe Cost Calculator",
     ) {
-        LaunchedEffect(Unit) {
-            injector.seeder.seedIfNeeded()
+        RazioneTheme {
+            LaunchedEffect(Unit) {
+                injector.seeder.seedIfNeeded()
+            }
+            App(
+                dashboardViewModel = injector.dashboardViewModel,
+                recipesViewModel = injector.recipesViewModel,
+                categoriesViewModel = injector.categoriesViewModel,
+                ingredientsViewModel = injector.ingredientsViewModel,
+                fixedCostsViewModel = injector.fixedCostsViewModel,
+                additionalCostsViewModel = injector.additionalCostsViewModel,
+                settingsViewModel = injector.settingsViewModel
+            )
         }
-        App(
-            dashboardViewModel = injector.dashboardViewModel,
-            recipesViewModel = injector.recipesViewModel,
-            categoriesViewModel = injector.categoriesViewModel,
-            ingredientsViewModel = injector.ingredientsViewModel,
-            fixedCostsViewModel = injector.fixedCostsViewModel,
-            additionalCostsViewModel = injector.additionalCostsViewModel,
-            settingsViewModel = injector.settingsViewModel
-        )
     }
 }

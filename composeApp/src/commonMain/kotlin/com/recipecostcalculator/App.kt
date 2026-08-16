@@ -36,6 +36,7 @@ import com.recipecostcalculator.ui.screens.configuration.ConfigurationScreen
 import com.recipecostcalculator.ui.screens.dashboard.DashboardScreen
 import com.recipecostcalculator.ui.screens.fixedcosts.FixedCostsScreen
 import com.recipecostcalculator.ui.screens.ingredients.IngredientsScreen
+import com.recipecostcalculator.ui.screens.gallery.ComponentGalleryScreen
 import com.recipecostcalculator.ui.screens.more.MoreScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipeDetailScreen
 import com.recipecostcalculator.ui.screens.recipes.RecipesScreen
@@ -46,6 +47,7 @@ private sealed class MainRoute {
     data object FixedCosts : MainRoute()
     data object AdditionalCosts : MainRoute()
     data object Configuration : MainRoute()
+    data object DesignGallery : MainRoute()
 }
 
 private const val TAB_COUNT = 4
@@ -106,7 +108,8 @@ fun App(
             MoreScreen(
                 onNavigateToFixedCosts = { route = MainRoute.FixedCosts },
                 onNavigateToConfiguration = { route = MainRoute.Configuration },
-                onNavigateToAdditionalCosts = { route = MainRoute.AdditionalCosts }
+                onNavigateToAdditionalCosts = { route = MainRoute.AdditionalCosts },
+                onNavigateToDesignGallery = { route = MainRoute.DesignGallery }
             )
         }
     )
@@ -157,6 +160,9 @@ fun App(
                 settingsViewModel = settingsViewModel,
                 onBack = { route = MainRoute.Tabs }
             )
+        }
+        MainRoute.DesignGallery -> {
+            ComponentGalleryScreen(onBack = { route = MainRoute.Tabs })
         }
     }
 }

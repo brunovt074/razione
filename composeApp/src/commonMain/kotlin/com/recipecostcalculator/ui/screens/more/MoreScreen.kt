@@ -20,7 +20,8 @@ import com.recipecostcalculator.ui.strings.es.More
 fun MoreScreen(
     onNavigateToFixedCosts: () -> Unit,
     onNavigateToConfiguration: () -> Unit,
-    onNavigateToAdditionalCosts: () -> Unit
+    onNavigateToAdditionalCosts: () -> Unit,
+    onNavigateToDesignGallery: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -50,6 +51,12 @@ fun MoreScreen(
             title = More.configuration,
             subtitle = More.configurationSubtitle,
             onClick = onNavigateToConfiguration
+        )
+
+        MenuCard(
+            title = More.designGallery,
+            subtitle = More.designGallerySubtitle,
+            onClick = onNavigateToDesignGallery
         )
     }
 }

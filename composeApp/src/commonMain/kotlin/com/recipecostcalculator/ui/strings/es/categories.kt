@@ -10,7 +10,7 @@ object Categories {
     val deleteCategory = "Eliminar categoría"
     val deleteCategoryConfirmation = "¿Eliminar la categoría \"%s\"? Esta acción no se puede deshacer."
     val deleteCategoryBlocked = "No se puede eliminar: la categoría tiene recetas asociadas."
-    val noCategories = "No hay categorías. Tocá + para crear una."
+    val noCategories = "No hay categorías. Toca + para crear una."
     val recipeCount = "recetas"
     val recipeCountSingular = "receta"
 }

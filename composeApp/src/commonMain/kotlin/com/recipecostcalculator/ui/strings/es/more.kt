@@ -8,4 +8,6 @@ object More {
     val supplyCostsSubtitle = "Bandejas, Bolsas, Descartables"
     val configuration = "Configuración"
     val configurationSubtitle = "Ajustes de la app"
+    val designGallery = "Galería de componentes"
+    val designGallerySubtitle = "Sistema de diseño Razione"
 }
