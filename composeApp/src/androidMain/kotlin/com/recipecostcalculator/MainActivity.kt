@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import com.recipecostcalculator.di.androidAppModule
+import com.recipecostcalculator.presentation.util.AppUpdateHelper
 import com.recipecostcalculator.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -12,6 +13,9 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var appUpdateHelper: AppUpdateHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -20,6 +24,9 @@ class MainActivity : ComponentActivity() {
             androidContext(this@MainActivity)
             modules(androidAppModule)
         }
+
+        appUpdateHelper = AppUpdateHelper(this)
+        appUpdateHelper.checkAndLaunchImmediateUpdate(APP_UPDATE_REQUEST_CODE)
 
         val dashboardViewModel: com.recipecostcalculator.ui.viewmodel.DashboardViewModel by inject()
         val recipesViewModel: com.recipecostcalculator.ui.viewmodel.RecipesViewModel by inject()
@@ -46,5 +53,14 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        appUpdateHelper.resumeInProgressUpdate(APP_UPDATE_REQUEST_CODE)
+    }
+
+    private companion object {
+        const val APP_UPDATE_REQUEST_CODE = 1001
     }
 }

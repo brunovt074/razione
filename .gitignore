@@ -8,3 +8,4 @@ out/
 business-context/
 composeApp/pizzeria.db
 pizzeria.db
+composeApp/release/

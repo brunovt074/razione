@@ -83,6 +83,8 @@ kotlin {
             implementation("io.insert-koin:koin-android:4.2.0")
             implementation(libs.sqldelight.driver.android)
             implementation(libs.lifecycle.runtime.ktx)
+            implementation(libs.google.play.app.update)
+            implementation(libs.google.play.app.update.ktx)
         }
     }
 }
@@ -95,8 +97,8 @@ android {
         applicationId = "com.recipecostcalculator"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = libs.versions.app.versionCode.get().toInt()
+        versionName = libs.versions.app.versionName.get()
     }
 
     buildTypes {

@@ -12,6 +12,9 @@ datetime = "0.6.1"
 android-minSdk = "26"
 android-targetSdk = "35"
 android-compileSdk = "36"
+app-versionCode = "3"
+app-versionName = "1.0.2"
+google-play-core = "2.1.0"
 
 [libraries]
 # Kotlin Test
@@ -48,6 +51,10 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+
+# Google Play Core
+google-play-app-update = { module = "com.google.android.play:app-update", version.ref = "google-play-core" }
+google-play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "google-play-core" }
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
